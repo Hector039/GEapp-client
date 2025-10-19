@@ -1,11 +1,10 @@
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
-import { UserContext } from "../../context/UserContext.js";
-import { useContext } from "react";
+import { useUser } from "../../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Logout() {
 	const navigation = useNavigation();
-	const { logout } = useContext(UserContext);
+	const { logout } = useUser();
 
 	function handleLogout() {
 		logout();

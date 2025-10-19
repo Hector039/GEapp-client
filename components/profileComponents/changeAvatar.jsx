@@ -1,20 +1,13 @@
-import {
-	StyleSheet,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
 import axios from "../../services/axiosInstance";
-import { UserContext } from "../../context/UserContext.js";
-import { useContext } from "react";
+import { useUser } from "../../context/UserContext.js";
 import * as ImagePicker from "expo-image-picker";
 
 const changeAvatar = "users/changeavatar";
 
 export default function ChangeAvatar({ uid }) {
-	const { setUserAvatar } = useContext(UserContext);
+	const { setUserAvatar } = useUser();
 
 	const [error, setError] = useState("");
 

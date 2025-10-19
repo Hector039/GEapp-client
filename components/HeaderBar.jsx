@@ -1,10 +1,9 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { UserContext } from "../context/UserContext.js";
-import { useContext } from "react";
+import { useUser } from "../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
 
 export default function HeaderBar() {
-	const { user, userAvatar } = useContext(UserContext);
+	const { user, userAvatar } = useUser();
 	const navigation = useNavigation();
 
 	const handleGoToProfile = () => {

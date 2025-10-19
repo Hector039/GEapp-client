@@ -1,6 +1,5 @@
 import { StyleSheet, View } from "react-native";
-import { UserContext } from "../context/UserContext.js";
-import { useContext } from "react";
+import { useUser } from "../context/UserContext.js";
 import Logout from "../components/profileComponents/logout.jsx";
 import ChangePassword from "../components/profileComponents/changePassword.jsx";
 import ChangeEmail from "../components/profileComponents/changeEmail.jsx";
@@ -9,7 +8,7 @@ import HeaderBar from "../components/HeaderBar.jsx";
 import NavBar from "../components/NavBar.jsx";
 
 export default function Profile() {
-	const { user } = useContext(UserContext);
+	const { user } = useUser();
 	console.log("user en profileScreen:", user);
 
 	return (

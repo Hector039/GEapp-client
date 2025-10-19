@@ -9,15 +9,14 @@ import { useState } from "react";
 import axios from "../../services/axiosInstance";
 import { emailRegex } from "../../tools/regexConstants";
 import CustomModal from "../../tools/CustomModal";
-import { UserContext } from "../../context/UserContext.js";
-import { useContext } from "react";
+import { useUser } from "../../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
 
 const changeEmail = "users/changeemail";
 
 export default function ChangeEmail({ uid, oldEmail }) {
 	const navigation = useNavigation();
-	const { logout } = useContext(UserContext);
+	const { logout } = useUser;
 
 	const [error, setError] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);

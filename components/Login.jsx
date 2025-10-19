@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import {
 	StyleSheet,
 	TextInput,
@@ -11,12 +11,12 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "../services/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { passwordRegex, emailRegex } from "../tools/regexConstants";
-import { UserContext } from "../context/UserContext.js";
+import { useUser } from "../context/UserContext.js";
 
 const userLogin = "users/login";
 
 export default function Login() {
-	const { setUser, setUserAvatar } = useContext(UserContext);
+	const { setUser, setUserAvatar } = useUser();
 	const navigation = useNavigation();
 	const [error, setError] = useState("");
 
@@ -39,7 +39,6 @@ export default function Login() {
 			axios
 				.post(userLogin, { email: email, password: password })
 				.then(async (response) => {
-					await AsyncStorage.setItem("user", JSON.stringify(response.data));
 					setUser(response.data);
 					if (response.data.avatar) {
 						setUserAvatar(response.data.avatar);

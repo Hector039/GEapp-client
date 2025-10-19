@@ -36,7 +36,8 @@
         {
           "photosPermission": "The app accesses your photos to change you avatar."
         }
-      ]
+      ],
+      "expo-android-pedometer"
     ]
   }
 }
