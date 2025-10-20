@@ -13,30 +13,34 @@ export default function Start() {
 
 	const [subscriptionState, setSubcriptionState] = useState(false);
 
-	let unsubscribe;
+	let start = new Date();
 
-	const handleSubscribe = async () => {
-		const start = Date.now();
-
+	const handleStart = async () => {
 		try {
+			const isInitialized = await initialize();
+			if (!isInitialized) {
+				console.log("El sensor de pasos no está disponible");
+				return;
+			}
 			if (subscriptionState === false) {
+				await AsyncStorage.removeItem("stepPeriod");
+				start = new Date();
+				const end = new Date();
+				end.setHours(end.getHours() + user.HOURS_TO_COUNT_STEPS || 2); // 2 horas al futuro por defecto
 				const stepCount = {
-					start,
-					end: Date.now() + (user.HOURS_TO_COUNT_STEPS || 2) * 60 * 60 * 1000, // 2 horas al futuro por defecto
+					start: start.toISOString(),
+					end: end.toISOString(),
 				};
-				await AsyncStorage.setItem("stepCount", JSON.stringify(stepCount));
-
-				// Initialize the pedometer
-				const isInitialized = await initialize();
-				console.log("is pedometer avaliable?:", isInitialized);
+				await AsyncStorage.setItem("stepPeriod", JSON.stringify(stepCount));
+				setSubcriptionState(true);
 			} else {
 				setSubcriptionState(false);
-				const end = Date.now() - start;
+				const end = new Date() - start;
 				const stepCount = {
-					start,
-					end,
+					start: start.toISOString(),
+					end: end.toISOString(),
 				};
-				await AsyncStorage.setItem("stepCount", JSON.stringify(stepCount));
+				await AsyncStorage.setItem("stepPeriod", JSON.stringify(stepCount));
 			}
 		} catch (error) {
 			console.error(error);
@@ -44,7 +48,7 @@ export default function Start() {
 	};
 
 	return (
-		<TouchableOpacity style={styles.startItem} onPress={handleSubscribe}>
+		<TouchableOpacity style={styles.startItem} onPress={handleStart}>
 			<Text style={styles.startText}>
 				{subscriptionState ? "Detener" : "Iniciar"}
 			</Text>

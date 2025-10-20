@@ -12,7 +12,6 @@ export default function CommunitySection() {
 	async function fetchUserCommunity() {
 		try {
 			const responseData = await getUserCommunity();
-			console.log("Community data:", responseData);
 			if (responseData) setCommunity(responseData);
 		} catch (error) {
 			console.log(error);

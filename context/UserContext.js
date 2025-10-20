@@ -43,7 +43,7 @@ export const UserProvider = ({ children }) => {
 		setStepsState(userSteps);
 	};
 
-	const Logout = async () => {
+	const logout = async () => {
 		await AsyncStorage.removeItem(USER_STORAGE_KEY);
 		setUserState(null);
 	};
@@ -97,7 +97,7 @@ export const UserProvider = ({ children }) => {
 	const value = {
 		user,
 		setUser,
-		Logout,
+		logout,
 		userAvatar,
 		setUserAvatar,
 		setSteps,

@@ -27,12 +27,47 @@ export default function UserIndicatorsSection() {
 			const isInitialized = await initialize();
 			console.log("is pedometer avaliable?:", isInitialized);
 
+			if (!isInitialized) {
+				console.log("El sensor de pasos no está disponible");
+				setError("El sensor de pasos no está disponible en este dispositivo.");
+				return;
+			}
+
+			const grantedPermissions = await requestPermission([
+				{ accessType: "read", recordType: "Steps" },
+			]);
+
+			console.log("permisos concedidos:", grantedPermissions);
+
+			if (
+				!grantedPermissions.some((permission) => permission.recordType === "Steps")
+			) {
+				console.log("Required permissions were not granted");
+				setError("Sin permisos concedidos por el usuario.");
+				return;
+			}
+
+			const stepPeriod = await AsyncStorage.getItem("stepPeriod");
+			console.log("stepPeriod from LS:", stepPeriod);
+
+			if (stepPeriod) {
+				const parsedStepPeriod = JSON.parse(stepPeriod);
+
+				const { records } = await readRecords("Steps", {
+					timeRangeFilter: {
+						operator: "between",
+						startTime: parsedStepPeriod.start,
+						endTime: parsedStepPeriod.end,
+					},
+				});
+				console.log("records:", records);
+			}
 			/* if (isInitialized) {
 				const grantedPermissions = await requestPermission([
-					{ accessType: "read", recordType: "step_count" },
+					{ accessType: "read", recordType: "Steps" },
 				]);
 
-				if (!grantedPermissions.includes("step_count")) {
+				if (!grantedPermissions.includes("Steps")) {
 					console.log("Required permissions were not granted");
 					setError("Sin permisos concedidos por el usuario.");
 					return;
@@ -85,7 +120,7 @@ export default function UserIndicatorsSection() {
 	async function fetchUserTotalSteps(uid) {
 		try {
 			const responseData = await getUserTotalSteps(uid);
-			setTotalSteps(responseData || 0);
+			if (responseData.totalSteps) setTotalSteps(responseData.totalSteps || 0);
 		} catch (error) {
 			console.error(error);
 			setError("Error al cargar los pasos totales del usuario");

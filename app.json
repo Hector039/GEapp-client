@@ -22,7 +22,8 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.health.READ_STEPS"
       ],
       "package": "com.hector039.GEapp"
     },
