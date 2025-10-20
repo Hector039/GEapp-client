@@ -1,28 +1,27 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import axios from "../services/axiosInstance";
+import { getUserChallenges } from "../services/apiEndpoints.js";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-
-const userChallenges = "users/challenges";
+import { useUser } from "../context/UserContext.js";
 
 export default function ChallengesSection() {
+	const { user } = useUser();
 	const [error, setError] = useState("");
 	const [challenges, setChallenges] = useState([]);
 
-	function getUserChallenges() {
-		axios
-			.get(userChallenges)
-			.then((response) => {
-				setChallenges(response.data);
-			})
-			.catch((error) => {
-				console.log(error);
-				setError("Error al cargar los desafíos");
-			});
+	async function fetchUserChallenges(uid) {
+		try {
+			const responseData = await getUserChallenges(uid);
+			console.log("Challenges data:", responseData);
+			if (responseData) setChallenges(responseData);
+		} catch (error) {
+			console.log(error);
+			setError("Error al cargar los desafíos");
+		}
 	}
 
 	useEffect(() => {
-		getUserChallenges();
+		fetchUserChallenges(user.id);
 	}, []);
 
 	function handleSeeMore() {

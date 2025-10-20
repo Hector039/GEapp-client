@@ -1,18 +1,20 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useEffect, useState, useContext } from "react";
-import * as AndroidPedometer from "expo-android-pedometer";
-import { StepsContext } from "../context/StepsContext";
+import { useEffect, useState } from "react";
+import {
+	initialize,
+	requestPermission,
+	readRecords,
+} from "react-native-health-connect";
 import { useUser } from "../context/UserContext.js";
-import axios from "../services/axiosInstance";
+import {
+	getUserTotalSteps,
+	saveUserSession,
+	updateUserTotalSteps,
+} from "../services/apiEndpoints.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const userTotalSteps = "users/getusertotalsteps";
-const updateUserTotalSteps = "users/updateusertotalsteps";
-const saveUserSession = "sessions/saveusersession";
-
 export default function UserIndicatorsSection() {
-	const { user } = useUser();
-	const { steps } = useContext(StepsContext);
+	const { user, steps } = useUser();
 
 	const [error, setError] = useState("");
 
@@ -22,95 +24,77 @@ export default function UserIndicatorsSection() {
 	const getDailySteps = async (uid) => {
 		try {
 			// Initialize the pedometer
-			const isInitialized = await AndroidPedometer.initialize();
+			const isInitialized = await initialize();
+			console.log("is pedometer avaliable?:", isInitialized);
 
-			if (isInitialized) {
-				// Check current permission status
-				const hasActivityPermission =
-					AndroidPedometer.getActivityPermissionStatus();
-				const hasNotificationPermission =
-					AndroidPedometer.getNotificationPermissionStatus();
+			/* if (isInitialized) {
+				const grantedPermissions = await requestPermission([
+					{ accessType: "read", recordType: "step_count" },
+				]);
 
-				if (!hasActivityPermission || !hasNotificationPermission) {
-					// Request necessary permissions
-					const permissionResponse = await AndroidPedometer.requestPermissions();
-					const notificationPermissionResponse =
-						await AndroidPedometer.requestNotificationPermissions();
+				if (!grantedPermissions.includes("step_count")) {
+					console.log("Required permissions were not granted");
+					setError("Sin permisos concedidos por el usuario.");
+					return;
+				}
+				const stepCount = await AsyncStorage.getItem("stepCount");
+				if (stepCount) {
+					const parsedStepCount = JSON.parse(stepCount);
+					const { records } = await readRecords("step_count", {
+						timeRangeFilter: {
+							operator: "between",
+							startTime: parsedStepCount.start,
+							endTime: parsedStepCount.end,
+						},
+					});
+					console.log("records:", records);
 
-					if (
-						!permissionResponse.granted ||
-						!notificationPermissionResponse.granted
-					) {
-						console.log("Required permissions were not granted");
-						setError("Sin permisos concedidos por el usuario.");
-						return;
-					}
-					// Get today's steps
-					const todaySteps = await AndroidPedometer.getStepsCountAsync();
-					console.log(`Today's steps: ${todaySteps}`);
-					setPastStepCount(todaySteps);
+					//setPastStepCount(records);
 
-					//Get steps in a period
-					const stepCount = await AsyncStorage.getItem("stepCount");
-					if (stepCount) {
-						const parsedStepCount = JSON.parse(stepCount);
-						const periodSteps = await AndroidPedometer.getStepsCountInRangeAsync(
-							parsedStepCount.start,
-							parsedStepCount.end
-						);
-						console.log("Step counts by period:", periodSteps);
-						if (periodSteps > 0) {
-							axios
-								.post(saveUserSession, {
-									uid,
-									steps: periodSteps,
-									date: parsedStepCount.start,
-								})
-								.then(async (response) => {
-									console.log("User session saved:", response.data);
-									await AsyncStorage.removeItem("stepCount");
-									axios
-										.put(updateUserTotalSteps, { uid, steps: periodSteps })
-										.then((response) => {
-											console.log("User total steps updated:", response.data);
-										})
-										.catch((error) => {
-											console.log("Error updating user total steps:", error);
-										});
-								})
-								.catch((error) => {
-									console.log("Error saving user session:", error);
-								});
+					if (records > 0) {
+						try {
+							const responseData = await saveUserSession(
+								uid,
+								records,
+								parsedStepCount.start
+							);
+							console.log("User session saved:", responseData);
+						} catch (error) {
+							console.log("Error saving user session:", error);
 						}
+
+						try {
+							if (records > 0) {
+								await AsyncStorage.removeItem("stepCount");
+								const updateResponse = await updateUserTotalSteps(uid, records);
+								console.log("User total steps updated:", updateResponse);
+							}
+						} catch (error) {
+							console.log("Error updating user total steps:", error);
+						} 
 					}
 				} else {
 					setError("Sensor de pasos no disponible.");
 				}
-			}
+			}*/
 		} catch (error) {
 			console.error(error);
 		}
 	};
 
-	function getUserTotalSteps(uid) {
+	async function fetchUserTotalSteps(uid) {
 		try {
-			axios
-				.get(userTotalSteps + `/${uid}`)
-				.then((response) => {
-					setTotalSteps(response.data);
-				})
-				.catch((error) => {
-					console.log(error);
-					setError("Error al cargar los pasos totales del usuario");
-				});
+			const responseData = await getUserTotalSteps(uid);
+			setTotalSteps(responseData || 0);
 		} catch (error) {
 			console.error(error);
+			setError("Error al cargar los pasos totales del usuario");
 		}
 	}
 
 	useEffect(() => {
 		if (user) {
-			getUserTotalSteps(user.id);
+			fetchUserTotalSteps(user.id);
 			getDailySteps(user.id);
 		}
 	}, []);

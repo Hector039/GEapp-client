@@ -1,10 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
-import axios from "../../services/axiosInstance";
+import { changeUserAvatar } from "../../services/apiEndpoints.js";
 import { useUser } from "../../context/UserContext.js";
 import * as ImagePicker from "expo-image-picker";
-
-const changeAvatar = "users/changeavatar";
 
 export default function ChangeAvatar({ uid }) {
 	const { setUserAvatar } = useUser();
@@ -43,21 +41,12 @@ export default function ChangeAvatar({ uid }) {
 				uri: selectedImage.uri,
 			});
 
-			axios
-				.postForm(changeAvatar + `/${uid}`, formData, {
-					headers: {
-						"Content-Type": "multipart/form-data",
-					},
-				})
-				.then((response) => {
-					setUserAvatar(response.data.avatarPath);
-				})
-				.catch((error) => {
-					console.log(error.response.data);
-					setError(error.response?.data?.error.message || "Error al cambiar Avatar");
-				});
+			const responseData = await changeUserAvatar(uid, formData);
+			console.log("changeAvatar data:", responseData);
+			if (responseData) setUserAvatar(responseData);
 		} catch (error) {
-			console.log("avatar change error:", error);
+			console.log(error.response.data);
+			setError(error.response?.data?.error.message || "Error al cambiar Avatar");
 		}
 	}
 

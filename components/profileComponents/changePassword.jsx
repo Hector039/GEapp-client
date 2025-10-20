@@ -6,11 +6,9 @@ import {
 	View,
 } from "react-native";
 import { useState } from "react";
-import axios from "../../services/axiosInstance";
+import { changePass } from "../../services/apiEndpoints.js";
 import { passwordRegex } from "../../tools/regexConstants";
 import CustomModal from "../../tools/CustomModal";
-
-const changePass = "users/changepassword";
 
 export default function ChangePassword({ uid }) {
 	const [error, setError] = useState("");
@@ -20,36 +18,31 @@ export default function ChangePassword({ uid }) {
 	const [newPassword, setNewPassword] = useState("");
 	const [newRePassword, setNewRePassword] = useState("");
 
-	function handleChangePassword() {
+	async function handleChangePassword() {
 		setError("");
+
+		if (!oldPassword || !newPassword || !newRePassword)
+			return setError("Faltan datos");
+		if (newPassword !== newRePassword)
+			return setError("Las contraseñas no coinciden");
+
+		if (!passwordRegex.test(oldPassword))
+			return setError(
+				"Contraseña anterior inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+			);
+		if (!passwordRegex.test(newPassword))
+			return setError(
+				"Contraseña nueva inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+			);
 		try {
-			if (!oldPassword || !newPassword || !newRePassword)
-				return setError("Faltan datos");
-			if (newPassword !== newRePassword)
-				return setError("Las contraseñas no coinciden");
-
-			if (!passwordRegex.test(oldPassword))
-				return setError(
-					"Contraseña anterior inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
-				);
-			if (!passwordRegex.test(newPassword))
-				return setError(
-					"Contraseña nueva inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
-				);
-
-			axios
-				.put(changePass, { uid, oldPassword, newPassword })
-				.then((response) => {
-					setModalVisible(true);
-				})
-				.catch((error) => {
-					console.log(error.response.data);
-					setError(
-						error.response?.data?.error.message || "Error al cambiar contraseña"
-					);
-				});
+			const responseData = await changePass(uid, oldPassword, newPassword);
+			console.log("changePass data:", responseData);
+			if (responseData) setModalVisible(true);
 		} catch (error) {
-			console.log("pass change error:", error);
+			console.log(error.response.data);
+			setError(
+				error.response?.data?.error.message || "Error al cambiar contraseña"
+			);
 		}
 	}
 

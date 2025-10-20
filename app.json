@@ -22,7 +22,6 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.hector039.GEapp"
@@ -37,7 +36,24 @@
           "photosPermission": "The app accesses your photos to change you avatar."
         }
       ],
-      "expo-android-pedometer"
-    ]
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      [
+        "expo-health-connect"
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f54a2095-3f2b-44cc-8e62-88d1d241e268"
+      }
+    }
   }
 }

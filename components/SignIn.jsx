@@ -8,13 +8,10 @@ import {
 	Switch,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import axios from "../services/axiosInstance";
+import { userSignUp, getOrgData } from "../services/apiEndpoints.js";
 import { useState } from "react";
 import { passwordRegex, emailRegex } from "../tools/regexConstants";
 import CustomModal from "../tools/CustomModal";
-
-const userSignUp = "users/signin";
-const orgData = "orgs/getorgs";
 
 export default function SignIn() {
 	const navigation = useNavigation();
@@ -34,49 +31,40 @@ export default function SignIn() {
 
 	const handleSignIn = async () => {
 		setError("");
+		if (!email || !password || !rePassword) return setError("Faltan datos");
+		if (isInOrganization && !selectedItem)
+			return setError("Selecciona la organización a la que perteneces");
+		if (password !== rePassword) return setError("Las contraseñas no coinciden");
+
+		if (!emailRegex.test(email))
+			return setError("Correo inválido, verifica e intenta nuevamente");
+		if (!passwordRegex.test(password))
+			return setError(
+				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+			);
+
 		try {
-			if (!email || !password || !rePassword) return setError("Faltan datos");
-			if (isInOrganization && !selectedItem)
-				return setError("Selecciona la organización a la que perteneces");
-			if (password !== rePassword) return setError("Las contraseñas no coinciden");
-
-			if (!emailRegex.test(email))
-				return setError("Correo inválido, verifica e intenta nuevamente");
-			if (!passwordRegex.test(password))
-				return setError(
-					"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
-				);
-
-			axios
-				.post(userSignUp, { email: email, password: password, org: selectedItem })
-				.then((response) => {
-					setModalVisible(true);
-				})
-				.catch((error) => {
-					console.log(error);
-					setError(error.response?.data?.error || "Error de registro");
-				});
+			const responseData = await userSignUp(email, password, selectedItem);
+			console.log("SignIn data:", responseData);
+			if (responseData) setModalVisible(true);
 		} catch (error) {
-			console.log("Login error:", error);
+			console.log(error);
+			setError(error.response?.data?.error || "Error de registro");
 		}
 	};
 
-	const handleIsInOrganizationChange = (newValue) => {
+	const handleIsInOrganizationChange = async (newValue) => {
 		setIsInorganization(newValue);
-		try {
-			if (newValue === true) {
-				axios
-					.get(orgData)
-					.then((response) => {
-						setOrganizations(response.data);
-					})
-					.catch((error) => {
-						console.log(error);
-						setError(error.response?.data?.error || "Error buscando la organización");
-					});
+		if (newValue === true) {
+			try {
+				const responseData = await getOrgData();
+				console.log("Org data:", responseData);
+				if (responseData && Array.isArray(responseData))
+					setOrganizations(responseData);
+			} catch (error) {
+				console.log("Error fetching Org data:", error);
+				setError(error.response?.data?.error || "Error buscando la organización");
 			}
-		} catch (error) {
-			console.log("Error Searching organization:", error);
 		}
 	};
 

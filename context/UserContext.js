@@ -5,10 +5,12 @@ export const UserContext = createContext(undefined);
 
 const USER_STORAGE_KEY = "user";
 const USER_AVATAR_PATH_KEY = "userAvatarPath";
+const USER_STEPS_KEY = "userSteps";
 
 export const UserProvider = ({ children }) => {
 	const [user, setUserState] = useState(null);
 	const [userAvatar, setUserAvatarState] = useState(null);
+	const [steps, setStepsState] = useState(0);
 
 	// Función para guardar el usuario en el estado y en el storage
 	const setUser = async (userData) => {
@@ -30,6 +32,15 @@ export const UserProvider = ({ children }) => {
 			await AsyncStorage.removeItem(USER_AVATAR_PATH_KEY);
 		}
 		setUserAvatarState(userAvatarPath);
+	};
+
+	const setSteps = async (userSteps) => {
+		if (userSteps) {
+			await AsyncStorage.setItem(USER_STEPS_KEY, JSON.stringify(userSteps));
+		} else {
+			await AsyncStorage.removeItem(USER_STEPS_KEY);
+		}
+		setStepsState(userSteps);
 	};
 
 	const Logout = async () => {
@@ -63,9 +74,24 @@ export const UserProvider = ({ children }) => {
 		}
 	};
 
+	const loadUserSteps = async () => {
+		try {
+			const storedUserSteps = await AsyncStorage.getItem(USER_STEPS_KEY);
+			if (storedUserSteps) {
+				setUserAvatarState(JSON.parse(storedUserSteps));
+			}
+		} catch (error) {
+			console.error(
+				"Error cargando los pasos del usuario desde AsyncStorage:",
+				error
+			);
+		}
+	};
+
 	useEffect(() => {
 		loadUser();
 		loadUserAvatar();
+		loadUserSteps();
 	}, []);
 
 	const value = {
@@ -74,6 +100,8 @@ export const UserProvider = ({ children }) => {
 		Logout,
 		userAvatar,
 		setUserAvatar,
+		setSteps,
+		steps,
 	};
 
 	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

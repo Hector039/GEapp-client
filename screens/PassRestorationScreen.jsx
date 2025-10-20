@@ -7,11 +7,9 @@ import {
 	StyleSheet,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import axios from "../services/axiosInstance";
+import { restorePassword } from "../services/apiEndpoints.js";
 import { passwordRegex, emailRegex } from "../tools/regexConstants";
 import CustomModal from "../tools/CustomModal";
-
-const userRestorePass = "users/restorepass";
 
 export default function PassRestorationScreen() {
 	const navigation = useNavigation();
@@ -36,15 +34,12 @@ export default function PassRestorationScreen() {
 					"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
 				);
 
-			axios
-				.post(userRestorePass, { email: email, password: password })
-				.then((response) => {
-					setModalVisible(true);
-				})
-				.catch((error) => {
-					console.log(error);
-					setError("Error al iniciar sesión");
-				});
+			try {
+				const responseData = await restorePassword(email, password);
+				if (responseData) setModalVisible(true);
+			} catch (error) {
+				setError("Error al enviar datos de restauración");
+			}
 		} catch (error) {
 			console.log("Login error:", error);
 		}

@@ -6,13 +6,11 @@ import {
 	View,
 } from "react-native";
 import { useState } from "react";
-import axios from "../../services/axiosInstance";
+import { changeUserEmail } from "../../services/apiEndpoints.js";
 import { emailRegex } from "../../tools/regexConstants";
 import CustomModal from "../../tools/CustomModal";
 import { useUser } from "../../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
-
-const changeEmail = "users/changeemail";
 
 export default function ChangeEmail({ uid, oldEmail }) {
 	const navigation = useNavigation();
@@ -23,27 +21,21 @@ export default function ChangeEmail({ uid, oldEmail }) {
 
 	const [newEmail, setNewEmail] = useState(oldEmail);
 
-	function handleChangeEmail() {
+	async function handleChangeEmail() {
 		setError("");
+
+		if (!newEmail) return setError("Faltan datos");
+		if (!emailRegex.test(newEmail))
+			return setError("Correo inválido, verifica e intenta nuevamente");
+		if (newEmail === oldEmail)
+			return setError("El nuevo correo debe ser diferente al anterior");
 		try {
-			if (!newEmail) return setError("Faltan datos");
-			if (!emailRegex.test(newEmail))
-				return setError("Correo inválido, verifica e intenta nuevamente");
-			if (newEmail === oldEmail)
-				return setError("El nuevo correo debe ser diferente al anterior");
-			axios
-				.put(changeEmail, { uid, newEmail })
-				.then((response) => {
-					setModalVisible(true);
-				})
-				.catch((error) => {
-					console.log(error.response.data.error);
-					setError(
-						error.response.data.error.message || "Error al cambiar contraseña"
-					);
-				});
+			const responseData = await changeUserEmail(uid, newEmail);
+			console.log("changePass data:", responseData);
+			if (responseData) setModalVisible(true);
 		} catch (error) {
-			console.log("email change error:", error);
+			console.log(error.response.data.error);
+			setError(error.response.data.error.message || "Error al cambiar el email");
 		}
 	}
 

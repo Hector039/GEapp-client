@@ -8,12 +8,10 @@ import {
 	Switch,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import axios from "../services/axiosInstance";
+import { userLogin } from "../services/apiEndpoints.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { passwordRegex, emailRegex } from "../tools/regexConstants";
 import { useUser } from "../context/UserContext.js";
-
-const userLogin = "users/login";
 
 export default function Login() {
 	const { setUser, setUserAvatar } = useUser();
@@ -27,33 +25,25 @@ export default function Login() {
 
 	const handleLogin = async () => {
 		setError("");
+		if (!email || !password) return setError("Faltan datos");
+		if (!emailRegex.test(email))
+			return setError("Correo inválido, verifica e intenta nuevamente");
+		if (!passwordRegex.test(password))
+			return setError(
+				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+			);
 		try {
-			if (!email || !password) return setError("Faltan datos");
-			if (!emailRegex.test(email))
-				return setError("Correo inválido, verifica e intenta nuevamente");
-			if (!passwordRegex.test(password))
-				return setError(
-					"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
-				);
-
-			axios
-				.post(userLogin, { email: email, password: password })
-				.then(async (response) => {
-					setUser(response.data);
-					if (response.data.avatar) {
-						setUserAvatar(response.data.avatar);
-					}
-					navigation.reset({
-						index: 0,
-						routes: [{ name: "Home" }],
-					});
-				})
-				.catch((error) => {
-					console.log(error.response.data);
-					setError(error.response?.data?.error || "Error de login");
-				});
+			const responseData = await userLogin(email, password);
+			console.log("Login data:", responseData);
+			if (responseData) setUser(responseData);
+			if (responseData.avatar) setUserAvatar(responseData.avatar);
+			navigation.reset({
+				index: 0,
+				routes: [{ name: "Home" }],
+			});
 		} catch (error) {
-			console.log("Login error:", error);
+			console.log(error.response.data);
+			setError(error.response?.data?.error || "Error de login");
 		}
 	};
 

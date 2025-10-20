@@ -1,30 +1,27 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import axios from "../services/axiosInstance";
+import { getUserCommunity } from "../services/apiEndpoints.js";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-
-const userCommunity = "users/getnewuserscommunity";
 
 export default function CommunitySection() {
 	const navigation = useNavigation();
 	const [error, setError] = useState("");
 	const [community, setCommunity] = useState([]);
 
-	function getUserCommunity() {
-		axios
-			.get(userCommunity)
-			.then((response) => {
-				setCommunity(response.data);
-			})
-			.catch((error) => {
-				console.log(error);
-				setError("Error al cargar los datos de la comunidad");
-			});
+	async function fetchUserCommunity() {
+		try {
+			const responseData = await getUserCommunity();
+			console.log("Community data:", responseData);
+			if (responseData) setCommunity(responseData);
+		} catch (error) {
+			console.log(error);
+			setError("Error al cargar los datos de la comunidad");
+		}
 	}
 
 	useEffect(() => {
-		getUserCommunity();
+		fetchUserCommunity();
 	}, []);
 
 	function handleSeeMore() {

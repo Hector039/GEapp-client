@@ -9,8 +9,6 @@ import NavBar from "../components/NavBar.jsx";
 
 export default function Profile() {
 	const { user } = useUser();
-	console.log("user en profileScreen:", user);
-
 	return (
 		<>
 			<View style={styles.container}>

@@ -1,12 +1,15 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
-import { StepsContext } from "../context/StepsContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUser } from "../context/UserContext.js";
+import {
+	initialize,
+	requestPermission,
+	readRecords,
+} from "react-native-health-connect";
 
 export default function Start() {
-	const { setSteps } = useContext(StepsContext);
-	const { user } = useUser();
+	const { user, setSteps } = useUser();
 
 	const [subscriptionState, setSubcriptionState] = useState(false);
 
@@ -24,26 +27,10 @@ export default function Start() {
 				await AsyncStorage.setItem("stepCount", JSON.stringify(stepCount));
 
 				// Initialize the pedometer
-				const isInitialized = await AndroidPedometer.initialize();
-
-				if (isInitialized) {
-					// Setup background updates with custom notification
-					await AndroidPedometer.setupBackgroundUpdates({
-						title: "Step Counter",
-						contentTemplate: "You've taken %d steps today",
-						style: "bigText",
-						iconResourceName: "ic_notification",
-					});
-					// Subscribe to real-time step updates
-					unsubscribe = AndroidPedometer.subscribeToChange((event) => {
-						console.log(`Steps: ${event.steps} at timestamp: ${event.timestamp}`);
-						setSteps(event.steps);
-					});
-					setSubcriptionState(true);
-				}
+				const isInitialized = await initialize();
+				console.log("is pedometer avaliable?:", isInitialized);
 			} else {
 				setSubcriptionState(false);
-				unsubscribe && unsubscribe();
 				const end = Date.now() - start;
 				const stepCount = {
 					start,
@@ -55,13 +42,6 @@ export default function Start() {
 			console.error(error);
 		}
 	};
-
-	useEffect(() => {
-		return () => {
-			setSubcriptionState(false);
-			unsubscribe && unsubscribe();
-		};
-	}, []);
 
 	return (
 		<TouchableOpacity style={styles.startItem} onPress={handleSubscribe}>
