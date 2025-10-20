@@ -4,6 +4,8 @@ import {
 	initialize,
 	requestPermission,
 	readRecords,
+	getSdkStatus,
+	SdkAvailabilityStatus,
 } from "react-native-health-connect";
 import { useUser } from "../context/UserContext.js";
 import {
@@ -14,7 +16,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function UserIndicatorsSection() {
-	const { user, steps } = useUser();
+	const { user } = useUser();
 
 	const [error, setError] = useState("");
 
@@ -23,6 +25,15 @@ export default function UserIndicatorsSection() {
 
 	const getDailySteps = async (uid) => {
 		try {
+			// Check SDK availability
+			const status = await getSdkStatus();
+			if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE)
+				setError("SDK is not available");
+			if (
+				status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+			)
+				setError("SDK is not available, provider update required");
+
 			// Initialize the pedometer
 			const isInitialized = await initialize();
 			console.log("is pedometer avaliable?:", isInitialized);
@@ -37,7 +48,7 @@ export default function UserIndicatorsSection() {
 				{ accessType: "read", recordType: "Steps" },
 			]);
 
-			console.log("permisos concedidos:", grantedPermissions);
+			//console.log("permisos concedidos:", grantedPermissions);
 
 			if (
 				!grantedPermissions.some((permission) => permission.recordType === "Steps")
@@ -47,71 +58,51 @@ export default function UserIndicatorsSection() {
 				return;
 			}
 
-			const stepPeriod = await AsyncStorage.getItem("stepPeriod");
-			console.log("stepPeriod from LS:", stepPeriod);
+			const startCountingSteps = await AsyncStorage.getItem("startCountingSteps");
 
-			if (stepPeriod) {
-				const parsedStepPeriod = JSON.parse(stepPeriod);
+			if (!startCountingSteps) return;
 
-				const { records } = await readRecords("Steps", {
-					timeRangeFilter: {
-						operator: "between",
-						startTime: parsedStepPeriod.start,
-						endTime: parsedStepPeriod.end,
-					},
-				});
-				console.log("records:", records);
+			let endCountingSteps = await AsyncStorage.getItem("endCountingSteps");
+
+			if (!endCountingSteps) {
+				const endCountingStepsTwoHours =
+					new Date(startCountingSteps).getTime() +
+					(user.HOURS_TO_COUNT_STEPS || 2) * 60 * 60 * 1000;
+				endCountingSteps = new Date(endCountingStepsTwoHours).toISOString();
 			}
-			/* if (isInitialized) {
-				const grantedPermissions = await requestPermission([
-					{ accessType: "read", recordType: "Steps" },
-				]);
+			const { records } = await readRecords("Steps", {
+				timeRangeFilter: {
+					operator: "between",
+					startTime: startCountingSteps,
+					endTime: endCountingSteps,
+				},
+			});
+			await AsyncStorage.removeItem("startCountingSteps");
+			await AsyncStorage.removeItem("endCountingSteps");
 
-				if (!grantedPermissions.includes("Steps")) {
-					console.log("Required permissions were not granted");
-					setError("Sin permisos concedidos por el usuario.");
-					return;
+			console.log("records:", records);
+
+			setPastStepCount(records.length > 0 ? records[0].count : 0);
+
+			if (records.length > 0 && records[0].count > 0) {
+				try {
+					const responseData = await saveUserSession(
+						uid,
+						records,
+						startCountingSteps
+					);
+					console.log("User session saved:", responseData);
+				} catch (error) {
+					console.log("Error saving user session:", error);
 				}
-				const stepCount = await AsyncStorage.getItem("stepCount");
-				if (stepCount) {
-					const parsedStepCount = JSON.parse(stepCount);
-					const { records } = await readRecords("step_count", {
-						timeRangeFilter: {
-							operator: "between",
-							startTime: parsedStepCount.start,
-							endTime: parsedStepCount.end,
-						},
-					});
-					console.log("records:", records);
 
-					//setPastStepCount(records);
-
-					if (records > 0) {
-						try {
-							const responseData = await saveUserSession(
-								uid,
-								records,
-								parsedStepCount.start
-							);
-							console.log("User session saved:", responseData);
-						} catch (error) {
-							console.log("Error saving user session:", error);
-						}
-
-						try {
-							if (records > 0) {
-								await AsyncStorage.removeItem("stepCount");
-								const updateResponse = await updateUserTotalSteps(uid, records);
-								console.log("User total steps updated:", updateResponse);
-							}
-						} catch (error) {
-							console.log("Error updating user total steps:", error);
-						} 
-					}
-				} else {
-					setError("Sensor de pasos no disponible.");
+				try {
+					const updateResponse = await updateUserTotalSteps(uid, records);
+					console.log("User total steps updated:", updateResponse);
+				} catch (error) {
+					console.log("Error updating user total steps:", error);
 				}
-			}*/
+			}
 		} catch (error) {
 			console.error(error);
 		}
@@ -142,14 +133,12 @@ export default function UserIndicatorsSection() {
 			<View style={styles.indicatorsContainer}>
 				<View style={styles.stepsContainer}>
 					<Text>Pasos totales:</Text>
-					<Text>{totalSteps + steps}</Text>
+					<Text>{totalSteps}</Text>
 				</View>
 				<View style={styles.stepsPercentageContainer}>
 					<Text>Meta diaria:</Text>
 					{user && user.RECOMMENDED_DAILY_STEPS && (
-						<Text>
-							{((pastStepCount + steps) * 100) / user.RECOMMENDED_DAILY_STEPS}%
-						</Text>
+						<Text>{(pastStepCount * 100) / user.RECOMMENDED_DAILY_STEPS}%</Text>
 					)}
 				</View>
 			</View>

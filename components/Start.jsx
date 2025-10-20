@@ -1,46 +1,26 @@
 import { useState } from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useUser } from "../context/UserContext.js";
-import {
-	initialize,
-	requestPermission,
-	readRecords,
-} from "react-native-health-connect";
+import { initialize } from "react-native-health-connect";
 
 export default function Start() {
-	const { user, setSteps } = useUser();
-
 	const [subscriptionState, setSubcriptionState] = useState(false);
-
-	let start = new Date();
 
 	const handleStart = async () => {
 		try {
 			const isInitialized = await initialize();
 			if (!isInitialized) {
-				console.log("El sensor de pasos no está disponible");
+				console.log("El sensor de pasos no está disponible desde Start.jsx");
 				return;
 			}
 			if (subscriptionState === false) {
-				await AsyncStorage.removeItem("stepPeriod");
-				start = new Date();
-				const end = new Date();
-				end.setHours(end.getHours() + user.HOURS_TO_COUNT_STEPS || 2); // 2 horas al futuro por defecto
-				const stepCount = {
-					start: start.toISOString(),
-					end: end.toISOString(),
-				};
-				await AsyncStorage.setItem("stepPeriod", JSON.stringify(stepCount));
+				const start = new Date().toISOString();
+				await AsyncStorage.setItem("startCountingSteps", JSON.stringify(start));
 				setSubcriptionState(true);
 			} else {
+				const end = new Date().toISOString();
+				await AsyncStorage.setItem("endCountingSteps", JSON.stringify(end));
 				setSubcriptionState(false);
-				const end = new Date() - start;
-				const stepCount = {
-					start: start.toISOString(),
-					end: end.toISOString(),
-				};
-				await AsyncStorage.setItem("stepPeriod", JSON.stringify(stepCount));
 			}
 		} catch (error) {
 			console.error(error);
