@@ -5,6 +5,7 @@ import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PassRestorationScreen from "./screens/PassRestorationScreen";
 import { UserProvider } from "./context/UserContext.js";
+import CommunityScreen from "./screens/CommunityScreen.jsx";
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,11 @@ export default function App() {
 					<Stack.Screen
 						name="Profile"
 						component={ProfileScreen}
+						options={{ headerShown: false }}
+					/>
+					<Stack.Screen
+						name="Community"
+						component={CommunityScreen}
 						options={{ headerShown: false }}
 					/>
 				</Stack.Navigator>

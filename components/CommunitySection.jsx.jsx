@@ -42,7 +42,7 @@ export default function CommunitySection() {
 				</View>
 			</View>
 			<View style={styles.newUsersContainer}>
-				<Text>Últimos caminadores seriales:</Text>
+				<Text>Nuevos caminadores:</Text>
 				<View style={styles.newUsersRow}>
 					{community && community.length > 0 ?
 						community.map((newCommunityUser) => (

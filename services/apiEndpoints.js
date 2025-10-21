@@ -13,6 +13,54 @@ const ENDPOINTS = {
 	saveUserSession: "sessions/saveusersession",
 	getUserCommunity: "users/getnewuserscommunity",
 	getUserChallenges: "users/challenges",
+	getTopUsers: "users/gettopusers",
+	getCommunitySteps: "users/getcommunitysteps",
+	getOrgUsers: "users/getorgusers",
+};
+
+export const getOrgUsers = async (uid) => {
+	try {
+		const response = await axios.get(ENDPOINTS.getOrgUsers + `/${uid}`);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en getOrgUsers:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const getTotalCommunitySteps = async () => {
+	try {
+		const response = await axios.get(ENDPOINTS.getCommunitySteps);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en getTotalCommunitySteps:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const getTopUsers = async () => {
+	try {
+		const response = await axios.get(ENDPOINTS.getTopUsers);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en getTopUsers:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
 };
 
 export const changeUserAvatar = async (uid, formData) => {

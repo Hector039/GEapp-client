@@ -61,19 +61,22 @@ export default function UserIndicatorsSection() {
 			const startCountingSteps = await AsyncStorage.getItem("startCountingSteps");
 
 			if (!startCountingSteps) return;
-
+			const parsedStartCountingSteps = JSON.parse(startCountingSteps);
 			let endCountingSteps = await AsyncStorage.getItem("endCountingSteps");
+			endCountingSteps = endCountingSteps ? JSON.parse(endCountingSteps) : null;
 
 			if (!endCountingSteps) {
 				const endCountingStepsTwoHours =
-					new Date(startCountingSteps).getTime() +
+					new Date(parsedStartCountingSteps).getTime() +
 					(user.HOURS_TO_COUNT_STEPS || 2) * 60 * 60 * 1000;
 				endCountingSteps = new Date(endCountingStepsTwoHours).toISOString();
 			}
+			//console.log("startCountingSteps:", parsedStartCountingSteps);
+			//console.log("endCountingSteps:", endCountingSteps);
 			const { records } = await readRecords("Steps", {
 				timeRangeFilter: {
 					operator: "between",
-					startTime: startCountingSteps,
+					startTime: parsedStartCountingSteps,
 					endTime: endCountingSteps,
 				},
 			});
@@ -82,16 +85,15 @@ export default function UserIndicatorsSection() {
 
 			console.log("records:", records);
 
-			setPastStepCount(records.length > 0 ? records[0].count : 0);
-
 			if (records.length > 0 && records[0].count > 0) {
 				try {
 					const responseData = await saveUserSession(
 						uid,
-						records,
+						records[0].count,
 						startCountingSteps
 					);
 					console.log("User session saved:", responseData);
+					setPastStepCount(responseData.steps || 0);
 				} catch (error) {
 					console.log("Error saving user session:", error);
 				}
@@ -99,6 +101,7 @@ export default function UserIndicatorsSection() {
 				try {
 					const updateResponse = await updateUserTotalSteps(uid, records);
 					console.log("User total steps updated:", updateResponse);
+					setTotalSteps(updateResponse.newTotalSteps);
 				} catch (error) {
 					console.log("Error updating user total steps:", error);
 				}
