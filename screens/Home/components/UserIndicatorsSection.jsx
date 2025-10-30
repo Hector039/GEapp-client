@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { useEffect, useState } from "react";
 import {
 	initialize,
@@ -7,23 +7,26 @@ import {
 	getSdkStatus,
 	SdkAvailabilityStatus,
 } from "react-native-health-connect";
-import { useUser } from "../context/UserContext.js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-	getUserTotalSteps,
 	saveUserSession,
 	updateUserTotalSteps,
-} from "../services/apiEndpoints.js";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+	updateOrgEventSteps,
+} from "../../../services/apiEndpoints.js";
+import { ProgressChart } from "react-native-chart-kit";
 
-export default function UserIndicatorsSection() {
-	const { user } = useUser();
+const screenWidth = Dimensions.get("window").width;
 
+export default function UserIndicatorsSection({
+	uid,
+	recommendedSteps,
+	eid,
+	setSteps,
+	steps,
+}) {
 	const [error, setError] = useState("");
 
-	const [pastStepCount, setPastStepCount] = useState(0);
-	const [totalSteps, setTotalSteps] = useState(0);
-
-	const getDailySteps = async (uid) => {
+	const getDailySteps = async (userId) => {
 		try {
 			// Check SDK availability
 			const status = await getSdkStatus();
@@ -73,13 +76,24 @@ export default function UserIndicatorsSection() {
 			}
 			//console.log("startCountingSteps:", parsedStartCountingSteps);
 			//console.log("endCountingSteps:", endCountingSteps);
+
+			const year = parsedStartCountingSteps.getFullYear();
+			const month = String(parsedStartCountingSteps.getMonth() + 1).padStart(
+				2,
+				"0"
+			);
+			const day = String(parsedStartCountingSteps.getDate()).padStart(2, "0");
+
+			const dateToPass = `${year}-${month}-${day}`;
+
 			const { records } = await readRecords("Steps", {
 				timeRangeFilter: {
 					operator: "between",
-					startTime: parsedStartCountingSteps,
+					startTime: dateToPass,
 					endTime: endCountingSteps,
 				},
 			});
+
 			await AsyncStorage.removeItem("startCountingSteps");
 			await AsyncStorage.removeItem("endCountingSteps");
 
@@ -88,22 +102,31 @@ export default function UserIndicatorsSection() {
 			if (records.length > 0 && records[0].count > 0) {
 				try {
 					const responseData = await saveUserSession(
-						uid,
+						userId,
 						records[0].count,
-						startCountingSteps
+						parsedStartCountingSteps.toLocaleDateString("en-CA")
 					);
 					console.log("User session saved:", responseData);
-					setPastStepCount(responseData.steps || 0);
+					//setPastStepCount(responseData.steps || 0);
 				} catch (error) {
 					console.log("Error saving user session:", error);
 				}
 
 				try {
-					const updateResponse = await updateUserTotalSteps(uid, records);
+					const updateResponse = await updateUserTotalSteps(
+						userId,
+						records[0].count
+					);
 					console.log("User total steps updated:", updateResponse);
-					setTotalSteps(updateResponse.newTotalSteps);
+					setSteps(updateResponse.newTotalSteps);
 				} catch (error) {
 					console.log("Error updating user total steps:", error);
+				}
+
+				try {
+					await updateOrgEventSteps(eid, records[0].count);
+				} catch (error) {
+					console.log("Error updating Org Event total steps:", error);
 				}
 			}
 		} catch (error) {
@@ -111,39 +134,37 @@ export default function UserIndicatorsSection() {
 		}
 	};
 
-	async function fetchUserTotalSteps(uid) {
-		try {
-			const responseData = await getUserTotalSteps(uid);
-			if (responseData.totalSteps) setTotalSteps(responseData.totalSteps || 0);
-		} catch (error) {
-			console.error(error);
-			setError("Error al cargar los pasos totales del usuario");
-		}
-	}
-
 	useEffect(() => {
-		if (user) {
-			fetchUserTotalSteps(user.id);
-			getDailySteps(user.id);
-		}
+		if (uid) getDailySteps(uid);
 	}, []);
+
+	const chartConfig = {
+		backgroundGradientFrom: "#1E2923",
+		backgroundGradientFromOpacity: 0,
+		backgroundGradientTo: "#08130D",
+		backgroundGradientToOpacity: 0,
+		color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+	};
 
 	return (
 		<View style={styles.container}>
 			{error ?
 				<Text>{error}</Text>
 			:	<Text>Sensor de pasos disponible!</Text>}
+			<Text>Meta diaria</Text>
 			<View style={styles.indicatorsContainer}>
-				<View style={styles.stepsContainer}>
-					<Text>Pasos totales:</Text>
-					<Text>{totalSteps}</Text>
+				<View style={styles.percentageContainer}>
+					<Text>{(steps * 100) / recommendedSteps}%</Text>
 				</View>
-				<View style={styles.stepsPercentageContainer}>
-					<Text>Meta diaria:</Text>
-					{user && user.RECOMMENDED_DAILY_STEPS && (
-						<Text>{(pastStepCount * 100) / user.RECOMMENDED_DAILY_STEPS}%</Text>
-					)}
-				</View>
+				<ProgressChart
+					data={{ data: [steps / recommendedSteps] }}
+					width={screenWidth}
+					height={100}
+					strokeWidth={20}
+					radius={32}
+					chartConfig={chartConfig}
+					hideLegend={true}
+				/>
 			</View>
 		</View>
 	);
@@ -155,14 +176,22 @@ const styles = StyleSheet.create({
 		backgroundColor: "#d0d0d0ff",
 		alignItems: "center",
 		justifyContent: "center",
+		marginVertical: 15,
 	},
-	stepsContainer: {
+	percentageContainer: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		justifyContent: "center",
 		alignItems: "center",
 	},
 	indicatorsContainer: {
-		flexDirection: "row",
-		justifyContent: "space-around",
-		width: "80%",
+		justifyContent: "center",
 		alignItems: "center",
+		position: "relative",
+		width: screenWidth,
+		height: 120,
 	},
 });

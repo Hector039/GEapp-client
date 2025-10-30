@@ -6,10 +6,10 @@ import {
 	View,
 } from "react-native";
 import { useState } from "react";
-import { changeUserEmail } from "../../services/apiEndpoints.js";
-import { emailRegex } from "../../tools/regexConstants";
-import CustomModal from "../../tools/CustomModal";
-import { useUser } from "../../context/UserContext.js";
+import { changeUserEmail } from "../../../services/apiEndpoints.js";
+import { emailRegex } from "../../../tools/regexConstants.js";
+import CustomModal from "../../../tools/CustomModal.jsx";
+import { useUser } from "../../../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
 
 export default function ChangeEmail({ uid, oldEmail }) {

@@ -53,6 +53,8 @@ export const UserProvider = ({ children }) => {
 			const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
 			if (storedUser) {
 				setUserState(JSON.parse(storedUser));
+				//await AsyncStorage.removeItem(USER_STORAGE_KEY); //solo para desloguear manualmente
+				//setUserState(null); //solo para desloguear manualmente
 			}
 		} catch (error) {
 			console.error("Error cargando usuario desde AsyncStorage:", error);
@@ -78,7 +80,7 @@ export const UserProvider = ({ children }) => {
 		try {
 			const storedUserSteps = await AsyncStorage.getItem(USER_STEPS_KEY);
 			if (storedUserSteps) {
-				setUserAvatarState(JSON.parse(storedUserSteps));
+				setStepsState(JSON.parse(storedUserSteps));
 			}
 		} catch (error) {
 			console.error(

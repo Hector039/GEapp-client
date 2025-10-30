@@ -4,7 +4,6 @@ import { jwtDecode } from "jwt-decode";
 export const checkLoginStatus = async () => {
 	try {
 		const user = await AsyncStorage.getItem("user");
-
 		if (user) {
 			const { token } = JSON.parse(user);
 			if (!token) return false;

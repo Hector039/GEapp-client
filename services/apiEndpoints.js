@@ -3,24 +3,30 @@ import axios from "./axiosInstance";
 const ENDPOINTS = {
 	userLogin: "users/login",
 	userSignUp: "users/signin",
-	getOrgData: "orgs/getorgs",
 	restorePassword: "users/restorepass",
 	changePass: "users/changepassword",
 	changeUserEmail: "users/changeemail",
 	changeUserAvatar: "users/changeavatar",
 	getUserTotalSteps: "users/getusertotalsteps",
 	updateUserTotalSteps: "users/updateusertotalsteps",
+	getUserInfoRewards: "sessions/getuserinforewards",
 	saveUserSession: "sessions/saveusersession",
-	getUserCommunity: "users/getnewuserscommunity",
-	getUserChallenges: "users/challenges",
-	getTopUsers: "users/gettopusers",
-	getCommunitySteps: "users/getcommunitysteps",
-	getOrgUsers: "users/getorgusers",
+	getRandomChallenge: "challenges/getrandomchallenge",
+	getFinishedChallenges: "userchallenges/getdonechallenges",
+	saveChallenge: "userchallenges/saveuserchallenge",
+	getOrgEventTotalSteps: "orgevents/getorgeventtotalsteps",
+	getDataChart: "sessions/getdatachart",
+	getAllChallenges: "challenges/getallchallenges",
+	getInfoProject: "refprojects/getrefproject",
+	getTicText: "tic/gettic",
+	updateOrgEventSteps: "orgevents/updateorgeventsteps",
 };
 
-export const getOrgUsers = async (uid) => {
+export const getUserInfoRewards = async (uid, date) => {
 	try {
-		const response = await axios.get(ENDPOINTS.getOrgUsers + `/${uid}`);
+		const response = await axios.get(
+			ENDPOINTS.getUserInfoRewards + `/${uid}` + `/${date}`
+		);
 		return response.data;
 	} catch (error) {
 		const errorMessage =
@@ -28,14 +34,14 @@ export const getOrgUsers = async (uid) => {
 				error.response.data.message ||
 				`Error ${error.response.status}: Error en el servidor`
 			:	"Error de red o timeout";
-		console.error("Error en getOrgUsers:", errorMessage, error);
+		console.error("Error en getUserInfoRewards:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };
 
-export const getTotalCommunitySteps = async () => {
+export const getInfoProject = async (pid) => {
 	try {
-		const response = await axios.get(ENDPOINTS.getCommunitySteps);
+		const response = await axios.get(ENDPOINTS.getInfoProject + `/${pid}`);
 		return response.data;
 	} catch (error) {
 		const errorMessage =
@@ -43,14 +49,14 @@ export const getTotalCommunitySteps = async () => {
 				error.response.data.message ||
 				`Error ${error.response.status}: Error en el servidor`
 			:	"Error de red o timeout";
-		console.error("Error en getTotalCommunitySteps:", errorMessage, error);
+		console.error("Error en getInfoProject:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };
 
-export const getTopUsers = async () => {
+export const getTicText = async () => {
 	try {
-		const response = await axios.get(ENDPOINTS.getTopUsers);
+		const response = await axios.get(ENDPOINTS.getTicText);
 		return response.data;
 	} catch (error) {
 		const errorMessage =
@@ -58,7 +64,85 @@ export const getTopUsers = async () => {
 				error.response.data.message ||
 				`Error ${error.response.status}: Error en el servidor`
 			:	"Error de red o timeout";
-		console.error("Error en getTopUsers:", errorMessage, error);
+		console.error("Error en getTicText:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const saveChallenge = async (uid, cid) => {
+	const payload = { uid, cid };
+	try {
+		const response = await axios.post(ENDPOINTS.saveChallenge, payload);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en saveChallenge:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const getAllChallenges = async (uid) => {
+	try {
+		const response = await axios.get(ENDPOINTS.getAllChallenges + `/${uid}`);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en getAllChallenges:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const getFinishedChallenges = async (uid) => {
+	try {
+		const response = await axios.get(ENDPOINTS.getFinishedChallenges + `/${uid}`);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en getFinishedChallenges:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const getDataChart = async (uid, filter) => {
+	try {
+		const response = await axios.get(
+			ENDPOINTS.getDataChart + `/${uid}` + `/${filter}`
+		);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en getDataChart:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const getOrgEventTotalSteps = async (eid) => {
+	try {
+		const response = await axios.get(ENDPOINTS.getOrgEventTotalSteps + `/${eid}`);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en getOrgEventTotalSteps:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };
@@ -119,9 +203,9 @@ export const changePass = async (uid, oldPassword, newPassword) => {
 	}
 };
 
-export const getUserChallenges = async (uid) => {
+export const getRandomChallenge = async (uid) => {
 	try {
-		const response = await axios.get(ENDPOINTS.getUserChallenges + `/${uid}`);
+		const response = await axios.get(ENDPOINTS.getRandomChallenge + `/${uid}`);
 		return response.data;
 	} catch (error) {
 		const errorMessage =
@@ -129,22 +213,7 @@ export const getUserChallenges = async (uid) => {
 				error.response.data.message ||
 				`Error ${error.response.status}: Error en el servidor`
 			:	"Error de red o timeout";
-		console.error("Error en getUserChallenges:", errorMessage, error);
-		throw new Error(errorMessage);
-	}
-};
-
-export const getUserCommunity = async () => {
-	try {
-		const response = await axios.get(ENDPOINTS.getUserCommunity);
-		return response.data;
-	} catch (error) {
-		const errorMessage =
-			error.response ?
-				error.response.data.message ||
-				`Error ${error.response.status}: Error en el servidor`
-			:	"Error de red o timeout";
-		console.error("Error en getUserCommunity:", errorMessage, error);
+		console.error("Error en getRandomChallenge:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };
@@ -157,41 +226,22 @@ export const userLogin = async (email, password) => {
 	} catch (error) {
 		const errorMessage =
 			error.response ?
-				error.response.data.message ||
-				`Error ${error.response.status}: Error en el servidor`
+				error.response.data.error.message
 			:	"Error de red o timeout";
-		console.error("Error en userLogin:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };
 
-export const getOrgData = async () => {
-	try {
-		const response = await axios.get(ENDPOINTS.getOrgData);
-		return response.data;
-	} catch (error) {
-		const errorMessage =
-			error.response ?
-				error.response.data.message ||
-				`Error ${error.response.status}: Error en el servidor`
-			:	"Error de red o timeout";
-		console.error("Error en getOrgData:", errorMessage, error);
-		throw new Error(errorMessage);
-	}
-};
-
-export const userSignUp = async (email, password, org) => {
-	const payload = { email, password, org };
+export const userSignUp = async (email, password) => {
+	const payload = { email, password };
 	try {
 		const response = await axios.post(ENDPOINTS.userSignUp, payload);
 		return response.data;
 	} catch (error) {
 		const errorMessage =
 			error.response ?
-				error.response.data.message ||
-				`Error ${error.response.status}: Error en el servidor`
+				error.response.data.error.message
 			:	"Error de red o timeout";
-		console.error("Error en userSignUp:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };
@@ -240,6 +290,22 @@ export const updateUserTotalSteps = async (uid, steps) => {
 				`Error ${error.response.status}: Error en el servidor`
 			:	"Error de red o timeout";
 		console.error("Error en updateUserTotalSteps:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const updateOrgEventSteps = async (eid, steps) => {
+	const payload = { eid, steps };
+	try {
+		const response = await axios.put(ENDPOINTS.updateOrgEventSteps, payload);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en updateOrgEventSteps:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };

@@ -11,7 +11,7 @@ export default function HeaderBar() {
 	};
 
 	return (
-		<View style={styles.userInfoContainer}>
+		<View style={styles.container}>
 			<TouchableOpacity onPress={handleGoToProfile}>
 				<Image
 					style={styles.userAvatar}
@@ -22,34 +22,29 @@ export default function HeaderBar() {
 				/>
 			</TouchableOpacity>
 
-			<View style={styles.userOrgContainer}>
+			<View style={styles.userInfoContainer}>
 				<Text>
 					Bienvenido {user ? user.email.slice(0, user.email.indexOf("@")) : ""}
 				</Text>
-				{user && user.org && <Text>{user.org}</Text>}
+				<Text>Tu acción suma!</Text>
 			</View>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	userInfoContainer: {
+	container: {
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "center",
-		gap: 10,
+		justifyContent: "space-evenly",
 		paddingVertical: 30,
-		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
 	},
-	userOrgContainer: {
+	userInfoContainer: {
 		flexDirection: "column",
 	},
 	userAvatar: {
-		width: 30,
-		height: 30,
+		width: 50,
+		height: 50,
 		borderRadius: 50,
 	},
 });

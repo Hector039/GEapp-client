@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Start from "./Start";
 
 export default function NavBar() {
 	const navigation = useNavigation();
@@ -9,8 +8,12 @@ export default function NavBar() {
 		navigation.navigate("Home");
 	};
 
+	const handleGoal = () => {
+		navigation.navigate("Goal");
+	};
+
 	const handleProgress = () => {
-		navigation.navigate("Progress");
+		navigation.navigate("Activity");
 	};
 
 	return (
@@ -19,10 +22,12 @@ export default function NavBar() {
 				<Text style={styles.navText}>Home</Text>
 			</TouchableOpacity>
 
-			<Start />
+			<TouchableOpacity style={styles.navItem} onPress={handleGoal}>
+				<Text style={styles.navText}>Meta</Text>
+			</TouchableOpacity>
 
 			<TouchableOpacity style={styles.navItem} onPress={handleProgress}>
-				<Text style={styles.navText}>Progreso</Text>
+				<Text style={styles.navText}>Act</Text>
 			</TouchableOpacity>
 		</View>
 	);
@@ -33,10 +38,6 @@ export const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-around",
 		paddingVertical: 30,
-		position: "absolute",
-		bottom: 0,
-		left: 0,
-		right: 0,
 		backgroundColor: "black",
 	},
 	navItem: {

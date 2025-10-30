@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
-import { changeUserAvatar } from "../../services/apiEndpoints.js";
-import { useUser } from "../../context/UserContext.js";
+import { changeUserAvatar } from "../../../services/apiEndpoints.js";
+import { useUser } from "../../../context/UserContext.js";
 import * as ImagePicker from "expo-image-picker";
 
 export default function ChangeAvatar({ uid }) {

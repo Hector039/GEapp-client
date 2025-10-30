@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
-import { useUser } from "../../context/UserContext.js";
+import { useUser } from "../../../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Logout() {

@@ -1,23 +1,21 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
-import { checkLoginStatus } from "../tools/checkLoginStatus";
+import { checkLoginStatus } from "../../tools/checkLoginStatus";
 import { useNavigation } from "@react-navigation/native";
-import Login from "../components/Login";
-import SignIn from "../components/SignIn";
+import Login from "./components/Login";
+import SignIn from "./components/SignIn";
 
 export default function SignLoginScreen() {
 	const navigation = useNavigation();
 	const [signupMode, setSignupMode] = useState(true);
-
-	const handleHome = () =>
-		navigation.reset({ index: 0, routes: [{ name: "Home" }] });
 	const toggleSignInMode = () => setSignupMode(!signupMode);
 
+	async function checkLoginStatusWrapper() {
+		const isLogged = await checkLoginStatus();
+		if (isLogged) navigation.navigate("Home");
+	}
+
 	useEffect(() => {
-		async function checkLoginStatusWrapper() {
-			const isLogged = await checkLoginStatus();
-			if (isLogged) handleHome();
-		}
 		checkLoginStatusWrapper();
 	}, []);
 
@@ -27,9 +25,8 @@ export default function SignLoginScreen() {
 				<Login />
 			:	<SignIn />}
 			<View style={styles.signUpModeContainer}>
-				<Text>{signupMode ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"} </Text>
 				<TouchableOpacity onPress={toggleSignInMode}>
-					<Text>{signupMode ? "Crea una aquí" : "Inicia sesión aquí"}</Text>
+					<Text>{signupMode ? "Crear cuenta" : "Inicia sesión"}</Text>
 				</TouchableOpacity>
 			</View>
 		</View>

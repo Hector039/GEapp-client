@@ -6,9 +6,9 @@ import {
 	View,
 } from "react-native";
 import { useState } from "react";
-import { changePass } from "../../services/apiEndpoints.js";
-import { passwordRegex } from "../../tools/regexConstants";
-import CustomModal from "../../tools/CustomModal";
+import { changePass } from "../../../services/apiEndpoints.js";
+import { passwordRegex } from "../../../tools/regexConstants.js";
+import CustomModal from "../../../tools/CustomModal.jsx";
 
 export default function ChangePassword({ uid }) {
 	const [error, setError] = useState("");

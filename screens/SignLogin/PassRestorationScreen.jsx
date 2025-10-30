@@ -7,9 +7,9 @@ import {
 	StyleSheet,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { restorePassword } from "../services/apiEndpoints.js";
-import { passwordRegex, emailRegex } from "../tools/regexConstants";
-import CustomModal from "../tools/CustomModal";
+import { restorePassword } from "../../services/apiEndpoints.js";
+import { passwordRegex, emailRegex } from "../../tools/regexConstants.js";
+import CustomModal from "../../tools/CustomModal.jsx";
 
 export default function PassRestorationScreen() {
 	const navigation = useNavigation();

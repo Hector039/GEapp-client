@@ -8,10 +8,10 @@ import {
 	Switch,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { userLogin } from "../services/apiEndpoints.js";
+import { userLogin } from "../../../services/apiEndpoints.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { passwordRegex, emailRegex } from "../tools/regexConstants";
-import { useUser } from "../context/UserContext.js";
+import { passwordRegex, emailRegex } from "../../../tools/regexConstants.js";
+import { useUser } from "../../../context/UserContext.js";
 
 export default function Login() {
 	const { setUser, setUserAvatar } = useUser();
@@ -34,16 +34,15 @@ export default function Login() {
 			);
 		try {
 			const responseData = await userLogin(email, password);
-			console.log("Login data:", responseData);
-			if (responseData) setUser(responseData);
 			if (responseData.avatar) setUserAvatar(responseData.avatar);
-			navigation.reset({
-				index: 0,
-				routes: [{ name: "Home" }],
-			});
+			if (responseData) {
+				console.log("Login data user:", responseData);
+				setUser(responseData);
+				navigation.navigate("Home");
+			}
 		} catch (error) {
-			console.log(error.response.data);
-			setError(error.response?.data?.error || "Error de login");
+			console.log(error.message);
+			setError(error.message || "Error de login");
 		}
 	};
 
@@ -125,14 +124,10 @@ export default function Login() {
 			</TouchableOpacity>
 
 			<View style={styles.restorationContainer}>
-				<Text> ¿Olvidaste tu contraseña? </Text>
 				<TouchableOpacity onPress={handlePassRestoration}>
-					<Text>Restáurala aquí</Text>
+					<Text>Olvidé mi contraseña</Text>
 				</TouchableOpacity>
 			</View>
-			<TouchableOpacity>
-				<Text>Continuar con Google</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }

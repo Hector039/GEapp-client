@@ -1,24 +1,18 @@
 import { useState } from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { initialize } from "react-native-health-connect";
 
 export default function Start() {
 	const [subscriptionState, setSubcriptionState] = useState(false);
 
 	const handleStart = async () => {
 		try {
-			const isInitialized = await initialize();
-			if (!isInitialized) {
-				console.log("El sensor de pasos no está disponible desde Start.jsx");
-				return;
-			}
 			if (subscriptionState === false) {
-				const start = new Date().toISOString();
+				let start = new Date();
 				await AsyncStorage.setItem("startCountingSteps", JSON.stringify(start));
 				setSubcriptionState(true);
 			} else {
-				const end = new Date().toISOString();
+				let end = new Date();
 				await AsyncStorage.setItem("endCountingSteps", JSON.stringify(end));
 				setSubcriptionState(false);
 			}
@@ -28,7 +22,7 @@ export default function Start() {
 	};
 
 	return (
-		<TouchableOpacity style={styles.startItem} onPress={handleStart}>
+		<TouchableOpacity onPress={handleStart}>
 			<Text style={styles.startText}>
 				{subscriptionState ? "Detener" : "Iniciar"}
 			</Text>
@@ -37,11 +31,7 @@ export default function Start() {
 }
 
 export const styles = StyleSheet.create({
-	startItem: {
-		alignItems: "center",
-	},
 	startText: {
-		color: "white",
 		fontSize: 12,
 	},
 });
