@@ -11,38 +11,42 @@ import { userSignUp } from "../../../services/apiEndpoints.js";
 import { useState } from "react";
 import { passwordRegex, emailRegex } from "../../../tools/regexConstants.js";
 import CustomModal from "../../../tools/CustomModal.jsx";
+import CustomLightModal from "../../../tools/CustomLightModal.jsx";
+import { globalStyles } from "../../../stylesConstants";
 
 export default function SignIn() {
 	const navigation = useNavigation();
 
+	const [error, setError] = useState("");
+	const [errorModalVisible, setErrorModalVisible] = useState(false);
+
 	const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 	const [acceptTic, setAcceptTic] = useState(false);
-
-	const [error, setError] = useState("");
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [rePassword, setRePassword] = useState("");
 
 	const handleSignIn = async () => {
-		setError("");
-		if (!email || !password || !rePassword) return setError("Faltan datos");
-		if (password !== rePassword) return setError("Las contraseñas no coinciden");
+		if (!email || !password || !rePassword) return handleError("Faltan datos");
+		if (password !== rePassword)
+			return handleError("Las contraseñas no coinciden");
 
 		if (!emailRegex.test(email))
-			return setError("Correo inválido, verifica e intenta nuevamente");
+			return handleError("Correo inválido, verifica e intenta nuevamente");
 		if (!passwordRegex.test(password))
-			return setError(
+			return handleError(
 				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
 			);
-		if (!acceptTic) return setError("Debes aceptar los Términos y condiciones");
+		if (!acceptTic)
+			return handleError("Debes aceptar los Términos y condiciones");
 		try {
 			const responseData = await userSignUp(email, password);
 			console.log("SignIn data:", responseData);
 			if (responseData) setIsSuccessModalVisible(true);
 		} catch (error) {
 			console.log("SignIn data error:", error.message);
-			setError(error.message || "Error de registro");
+			handleError(error.message || "Error de registro");
 		}
 	};
 
@@ -54,52 +58,66 @@ export default function SignIn() {
 		setAcceptTic(!acceptTic);
 	};
 
+	const handleError = (error) => {
+		setError(error);
+		setErrorModalVisible(!errorModalVisible);
+	};
+
 	return (
 		<View style={styles.container}>
-			{error ?
-				<Text>{error}</Text>
-			:	null}
 			<TextInput
 				placeholder="Correo electrónico"
-				placeholderTextColor="#000000ff"
+				placeholderTextColor="#5E5D5D"
 				value={email}
 				onChangeText={setEmail}
 				keyboardType="email-address"
 				autoCapitalize="none"
+				style={styles.textInput}
 			/>
 			<TextInput
 				placeholder="Contraseña"
-				placeholderTextColor="#000000ff"
+				placeholderTextColor="#5E5D5D"
 				secureTextEntry
 				value={password}
 				onChangeText={setPassword}
+				style={styles.textInput}
 			/>
 			<TextInput
-				placeholder="Confirma Contraseña"
-				placeholderTextColor="#000000ff"
+				placeholder="Repetir Contraseña"
+				placeholderTextColor="#5E5D5D"
 				secureTextEntry
 				value={rePassword}
 				onChangeText={setRePassword}
+				style={styles.textInput}
 			/>
 			<View style={styles.switchContainer}>
 				<Switch
-					trackColor={{ false: "#767577", true: "#81b0ff" }}
-					thumbColor={"#f4f3f4"}
+					trackColor={{ false: "#d8d8d8ff", true: "#67A599" }}
+					thumbColor={acceptTic ? "#80B349" : "#a8a8a8ff"}
 					ios_backgroundColor="#3e3e3e"
 					onValueChange={handleAcceptSwitch}
 					value={acceptTic}
 				/>
 				<View style={styles.ticContainer}>
-					<Text>Acepto </Text>
+					<Text style={styles.ticText}>Acepto </Text>
 					<TouchableOpacity onPress={() => handleTic()}>
-						<Text>TÉRMINOS Y CONDICIONES</Text>
+						<Text style={styles.ticTextTerms}>TÉRMINOS Y CONDICIONES</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
 
-			<TouchableOpacity onPress={() => handleSignIn()}>
-				<Text>Ingresar</Text>
+			<TouchableOpacity
+				onPress={() => handleSignIn()}
+				style={styles.registerButton}
+			>
+				<Text style={styles.registerButtonText}>Ingresar</Text>
 			</TouchableOpacity>
+
+			<CustomLightModal
+				visible={errorModalVisible}
+				onClose={() => setErrorModalVisible(!errorModalVisible)}
+				errorMessage={error}
+			/>
 
 			<CustomModal
 				visible={isSuccessModalVisible}
@@ -108,7 +126,7 @@ export default function SignIn() {
 				message="Por favor revisa tu email para verificar tu cuenta."
 				backgroundColor="#e6ffe6"
 				iconName="checkmark-circle-outline"
-				iconColor="green"
+				iconColor={globalStyles.colors.primary}
 				buttons={[
 					{
 						text: "Aceptar",
@@ -119,7 +137,7 @@ export default function SignIn() {
 								routes: [{ name: "SignLogin" }],
 							});
 						},
-						style: { backgroundColor: "green" },
+						style: { backgroundColor: globalStyles.colors.primary },
 					},
 				]}
 			/>
@@ -129,15 +147,31 @@ export default function SignIn() {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		backgroundColor: "#d0d0d0ff",
 		alignItems: "center",
 		justifyContent: "center",
+		borderRadius: 30,
+		borderColor: globalStyles.colors.tertiary,
+		borderWidth: 2,
+		width: "85%",
+		marginBlock: 20,
+	},
+	textInput: {
+		width: "85%",
+		borderColor: globalStyles.colors.secondary,
+		borderWidth: 1,
+		borderRadius: 18,
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.medium,
+		color: "#5E5D5D",
+		textAlign: "center",
+		backgroundColor: "#80b34925",
+		marginTop: 30,
 	},
 	switchContainer: {
 		flexDirection: "row",
 		alignItems: "center",
 		gap: 10,
+		marginTop: 15,
 	},
 	pickerContainer: {
 		backgroundColor: "transparent",
@@ -148,8 +182,32 @@ const styles = StyleSheet.create({
 		color: "black",
 	},
 	ticContainer: {
-		flexDirection: "row",
-		alignItems: "center",
+		flexDirection: "column",
+		alignItems: "flex-start",
 		gap: 10,
+	},
+	ticText: {
+		color: globalStyles.colors.tertiary,
+		fontFamily: "KarlaExtraBold",
+		fontSize: globalStyles.fSizes.medium,
+	},
+	ticTextTerms: {
+		color: globalStyles.colors.tertiary,
+		fontFamily: "KarlaExtraBold",
+		fontSize: globalStyles.fSizes.medium,
+		textDecorationLine: "underline",
+	},
+	registerButton: {
+		width: "45%",
+		borderRadius: 30,
+		backgroundColor: globalStyles.colors.primary,
+		marginBlock: 30,
+	},
+	registerButtonText: {
+		color: "white",
+		fontFamily: "KarlaBold",
+		fontSize: globalStyles.fSizes.large,
+		textAlign: "center",
+		paddingBlock: 15,
 	},
 });

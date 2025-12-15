@@ -1,4 +1,10 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import {
+	ImageBackground,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import { useEffect, useState } from "react";
 import {
 	initialize,
@@ -13,37 +19,39 @@ import {
 	updateUserTotalSteps,
 	updateOrgEventSteps,
 } from "../../../services/apiEndpoints.js";
-import { ProgressChart } from "react-native-chart-kit";
-
-const screenWidth = Dimensions.get("window").width;
+import { globalStyles } from "../../../stylesConstants.js";
+import CustomLightModal from "../../../tools/CustomLightModal.jsx";
+import CircularProgress from "./CircularProgress.jsx";
+import { useNavigation } from "@react-navigation/native";
 
 export default function UserIndicatorsSection({
 	uid,
+	hoursToCountSteps,
 	recommendedSteps,
 	eid,
 	setSteps,
 	steps,
 }) {
-	const [error, setError] = useState("");
+	const navigation = useNavigation();
+	const [error, setError] = useState(false);
+	const [errorModalVisible, setErrorModalVisible] = useState(false);
 
 	const getDailySteps = async (userId) => {
 		try {
 			// Check SDK availability
 			const status = await getSdkStatus();
 			if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE)
-				setError("SDK is not available");
+				handleError("SDK no disponible.");
 			if (
 				status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
 			)
-				setError("SDK is not available, provider update required");
+				handleError("SDK no disponible, se requiere actualización");
 
 			// Initialize the pedometer
 			const isInitialized = await initialize();
-			console.log("is pedometer avaliable?:", isInitialized);
 
 			if (!isInitialized) {
-				console.log("El sensor de pasos no está disponible");
-				setError("El sensor de pasos no está disponible en este dispositivo.");
+				handleError("El sensor de pasos no disponible en este dispositivo.");
 				return;
 			}
 
@@ -51,27 +59,25 @@ export default function UserIndicatorsSection({
 				{ accessType: "read", recordType: "Steps" },
 			]);
 
-			//console.log("permisos concedidos:", grantedPermissions);
-
 			if (
 				!grantedPermissions.some((permission) => permission.recordType === "Steps")
 			) {
-				console.log("Required permissions were not granted");
-				setError("Sin permisos concedidos por el usuario.");
+				handleError("Sin permisos concedidos por el usuario.");
 				return;
 			}
 
 			const startCountingSteps = await AsyncStorage.getItem("startCountingSteps");
 
 			if (!startCountingSteps) return;
-			const parsedStartCountingSteps = JSON.parse(startCountingSteps);
+			const parsedStartCountingSteps = new Date(JSON.parse(startCountingSteps));
 			let endCountingSteps = await AsyncStorage.getItem("endCountingSteps");
-			endCountingSteps = endCountingSteps ? JSON.parse(endCountingSteps) : null;
+			endCountingSteps =
+				endCountingSteps ? new Date(JSON.parse(endCountingSteps)) : null;
 
 			if (!endCountingSteps) {
 				const endCountingStepsTwoHours =
-					new Date(parsedStartCountingSteps).getTime() +
-					(user.HOURS_TO_COUNT_STEPS || 2) * 60 * 60 * 1000;
+					parsedStartCountingSteps.getTime() +
+					(hoursToCountSteps || 2) * 60 * 60 * 1000;
 				endCountingSteps = new Date(endCountingStepsTwoHours).toISOString();
 			}
 			//console.log("startCountingSteps:", parsedStartCountingSteps);
@@ -84,7 +90,7 @@ export default function UserIndicatorsSection({
 			);
 			const day = String(parsedStartCountingSteps.getDate()).padStart(2, "0");
 
-			const dateToPass = `${year}-${month}-${day}`;
+			const dateToPass = new Date(year, month - 1, day).toISOString();
 
 			const { records } = await readRecords("Steps", {
 				timeRangeFilter: {
@@ -138,60 +144,106 @@ export default function UserIndicatorsSection({
 		if (uid) getDailySteps(uid);
 	}, []);
 
-	const chartConfig = {
-		backgroundGradientFrom: "#1E2923",
-		backgroundGradientFromOpacity: 0,
-		backgroundGradientTo: "#08130D",
-		backgroundGradientToOpacity: 0,
-		color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+	const handleError = (error) => {
+		setError(error);
+		setErrorModalVisible(!errorModalVisible);
 	};
+
+	function handleGoToChallenge() {
+		navigation.navigate("Challenges");
+	}
 
 	return (
 		<View style={styles.container}>
-			{error ?
-				<Text>{error}</Text>
-			:	<Text>Sensor de pasos disponible!</Text>}
-			<Text>Meta diaria</Text>
-			<View style={styles.indicatorsContainer}>
-				<View style={styles.percentageContainer}>
-					<Text>{(steps * 100) / recommendedSteps}%</Text>
-				</View>
-				<ProgressChart
-					data={{ data: [steps / recommendedSteps] }}
-					width={screenWidth}
-					height={100}
-					strokeWidth={20}
-					radius={32}
-					chartConfig={chartConfig}
-					hideLegend={true}
-				/>
+			<Text style={styles.title}>Tu actividad</Text>
+			<View style={styles.indicatorsCardContainer}>
+				<CircularProgress percentage={(steps * 100) / recommendedSteps} />
+
+				<ImageBackground
+					style={styles.challengeContainer}
+					source={require("../assets/mountain.png")}
+					resizeMode="contain"
+				>
+					<TouchableOpacity
+						onPress={handleGoToChallenge}
+						style={styles.challengeButton}
+					>
+						<Text style={styles.challengeText}>Desafíos</Text>
+						<Text style={styles.challengeSeeText}>Ver</Text>
+					</TouchableOpacity>
+				</ImageBackground>
 			</View>
+			<Text style={styles.subTitle}>
+				¡Has alcanzado el {(steps * 100) / recommendedSteps}% de tu objetivo de hoy,
+				mantente enfocado en tu salud!
+			</Text>
+			<CustomLightModal
+				visible={errorModalVisible}
+				onClose={() => setErrorModalVisible(!errorModalVisible)}
+				errorMessage={error}
+			/>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		backgroundColor: "#d0d0d0ff",
-		alignItems: "center",
-		justifyContent: "center",
 		marginVertical: 15,
+		borderRadius: 20,
+		borderColor: "#D0DBE2",
+		borderWidth: 1,
+		width: "88%",
+		alignSelf: "center",
 	},
-	percentageContainer: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		justifyContent: "center",
-		alignItems: "center",
+	title: {
+		fontFamily: "RubikBold",
+		fontSize: 20,
+		color: globalStyles.colors.tertiary,
+		paddingVertical: 15,
+		paddingLeft: 15,
 	},
-	indicatorsContainer: {
-		justifyContent: "center",
+	subTitle: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.small,
+		color: globalStyles.colors.tertiary,
+		paddingHorizontal: 30,
+		marginVertical: 20,
+		textAlign: "center",
+	},
+	indicatorsCardContainer: {
+		flexDirection: "row",
+		justifyContent: "space-evenly",
 		alignItems: "center",
-		position: "relative",
-		width: screenWidth,
-		height: 120,
+		width: "100%",
+	},
+	percentage: {
+		fontFamily: "RubikBold",
+		fontSize: 35,
+		color: globalStyles.colors.primary,
+	},
+	percentageText: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.small,
+	},
+	challengeContainer: {
+		borderRadius: 10,
+		width: 160,
+		height: 180,
+		justifyContent: "center",
+	},
+	challengeSeeText: {
+		fontFamily: "RubikBold",
+		fontSize: 22,
+		color: "#043000",
+	},
+	challengeText: {
+		fontFamily: "RubikMedium",
+		fontSize: 16,
+		color: "#043000",
+		paddingRight: 30,
+	},
+	challengeButton: {
+		paddingLeft: 10,
+		gap: 25,
 	},
 });

@@ -1,9 +1,9 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { getFinishedChallenges } from "../../../services/apiEndpoints.js";
 import { useEffect, useState } from "react";
+import { globalStyles } from "../../../stylesConstants.js";
 
 export default function FinishedChallengesSection({ uid }) {
-	const [error, setError] = useState("");
 	const [finishedChallenges, setFinishedChallenges] = useState([]);
 
 	async function fetchUserFinishedChallenges(userId) {
@@ -23,29 +23,30 @@ export default function FinishedChallengesSection({ uid }) {
 
 	return (
 		<View style={styles.container}>
-			{error ?
-				<Text>{error}</Text>
-			:	null}
-			{finishedChallenges && finishedChallenges.length > 0 ?
-				finishedChallenges.map((challenge) => (
-					<View style={styles.challengesContainer} key={challenge._id}>
-						<Image
-							style={styles.image}
-							source={
-								challenge.triviaId ?
-									{ uri: challenge.triviaId.icon }
-								:	require("../../../assets/default-avatar.png")
-							}
-							resizeMode="contain"
-						/>
-						<View>
-							<Text>{challenge.triviaId.title}</Text>
-							<Text>Recompensa: {challenge.triviaId.reward}</Text>
-							<Text>Trivia</Text>
+			<Text style={styles.titleContainer}>Desafíos terminados:</Text>
+			<ScrollView>
+				{finishedChallenges && finishedChallenges.length > 0 ?
+					finishedChallenges.map((challenge) => (
+						<View style={styles.challengesContainer} key={challenge._id}>
+							<Image
+								style={styles.image}
+								source={{ uri: challenge.triviaId.icon }}
+								resizeMode="contain"
+							/>
+							<View style={styles.textContainer}>
+								<Text style={styles.title}>{challenge.triviaId.title}</Text>
+								<Text style={styles.reward}>
+									Recompensa: {challenge.triviaId.reward} pasos
+								</Text>
+								<Text style={styles.reward}>Tipo: Trivia</Text>
+							</View>
 						</View>
-					</View>
-				))
-			:	<Text>Aún no completaste ningún desafío</Text>}
+					))
+				:	<Text style={styles.notYetChallengesContainer}>
+						Aún no completaste ningún desafío
+					</Text>
+				}
+			</ScrollView>
 		</View>
 	);
 }
@@ -53,19 +54,46 @@ export default function FinishedChallengesSection({ uid }) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#d0d0d0ff",
 		alignItems: "center",
-		justifyContent: "center",
+		marginTop: 40,
+	},
+	titleContainer: {
+		fontFamily: "RubikBold",
+		fontSize: 18,
+		marginBottom: 15,
 	},
 	challengesContainer: {
-		width: "85%",
 		flexDirection: "row",
 		justifyContent: "space-around",
-		marginVertical: 15,
+		paddingVertical: 15,
+		borderRadius: 30,
+		borderColor: globalStyles.colors.tertiary,
+		borderWidth: 1,
+		width: "100%",
+		marginBottom: 15,
 	},
 	image: {
-		width: 50,
-		height: 50,
+		width: 70,
+		height: 70,
 		borderRadius: 50,
+	},
+	notYetChallengesContainer: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.large,
+		color: globalStyles.colors.tertiary,
+		textAlign: "center",
+		width: "90%",
+		marginTop: 50,
+	},
+	textContainer: {
+		paddingRight: 20,
+	},
+	title: {
+		fontFamily: "RubikBold",
+		fontSize: globalStyles.fSizes.medium,
+	},
+	reward: {
+		fontFamily: "RubikMedium",
+		color: "#00000071",
 	},
 });

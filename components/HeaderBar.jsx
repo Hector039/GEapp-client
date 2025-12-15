@@ -1,8 +1,10 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useUser } from "../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
+import { globalStyles } from "../stylesConstants.js";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function HeaderBar() {
+export default function HeaderBar({ title, subTitle }) {
 	const { user, userAvatar } = useUser();
 	const navigation = useNavigation();
 
@@ -11,33 +13,45 @@ export default function HeaderBar() {
 	};
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container}>
 			<TouchableOpacity onPress={handleGoToProfile}>
 				<Image
 					style={styles.userAvatar}
 					source={
-						userAvatar ? { uri: userAvatar } : require("../assets/default-avatar.png")
+						userAvatar ?
+							{ uri: userAvatar }
+						:	require("../assets/avatar-generico-dama.png")
 					}
 					resizeMode="cover"
 				/>
 			</TouchableOpacity>
 
 			<View style={styles.userInfoContainer}>
-				<Text>
-					Bienvenido {user ? user.email.slice(0, user.email.indexOf("@")) : ""}
-				</Text>
-				<Text>Tu acción suma!</Text>
+				{subTitle ?
+					<Text style={styles.titleWelcome}>
+						Hola {user.email ? user.email.slice(0, user.email.indexOf("@")) : ""}
+					</Text>
+				:	<Text style={styles.title}>{title}</Text>}
+				{subTitle ?
+					<Text style={styles.subTitleWelcome}>{subTitle}</Text>
+				:	null}
 			</View>
-		</View>
+		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
+		position: "relative", // Fija la barra
+		top: 0,
+		left: 0,
+		right: 0,
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "space-evenly",
-		paddingVertical: 30,
+		paddingVertical: 20,
+		marginLeft: 25,
+		gap: 30,
+		height: 120,
 	},
 	userInfoContainer: {
 		flexDirection: "column",
@@ -46,5 +60,20 @@ const styles = StyleSheet.create({
 		width: 50,
 		height: 50,
 		borderRadius: 50,
+	},
+	titleWelcome: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.medium,
+		color: globalStyles.colors.tertiary,
+	},
+	subTitleWelcome: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.small,
+		color: globalStyles.colors.tertiary,
+	},
+	title: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.large,
+		color: globalStyles.colors.tertiary,
 	},
 });

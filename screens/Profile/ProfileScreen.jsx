@@ -1,37 +1,87 @@
-import { StyleSheet, View } from "react-native";
+import {
+	ActivityIndicator,
+	Image,
+	ScrollView,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native";
 import { useUser } from "../../context/UserContext.js";
 import Logout from "./components/logout.jsx";
 import ChangePassword from "./components/changePassword.jsx";
 import ChangeEmail from "./components/changeEmail.jsx";
 import ChangeAvatar from "./components/changeAvatar.jsx";
-import HeaderBar from "../../components/HeaderBar.jsx";
-import NavBar from "../../components/NavBar.jsx";
+import { globalStyles } from "../../stylesConstants.js";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Profile() {
-	const { user } = useUser();
+export default function ProfileScreen() {
+	const { user, userAvatar } = useUser();
 	return (
-		<View style={styles.container}>
-			<HeaderBar />
-			<View style={styles.content}>
-				{user && <ChangeEmail uid={user.id} oldEmail={user.email} />}
-				{user && <ChangePassword uid={user.id} />}
-				{user && <ChangeAvatar uid={user.id} />}
-				<Logout />
-			</View>
-			<NavBar />
-		</View>
+		<SafeAreaView style={styles.container}>
+			<Text style={styles.title}>Perfil</Text>
+			{user ?
+				<View style={styles.userInfocontainer}>
+					<Image
+						style={styles.userAvatar}
+						source={
+							userAvatar ?
+								{ uri: userAvatar }
+							:	require("../../assets/avatar-generico-dama.png")
+						}
+						resizeMode="cover"
+					/>
+					<View style={styles.emailInfoContainer}>
+						<Text style={styles.emailTitleText}>Mail de registro</Text>
+						<Text style={styles.emailText}>{user.email}</Text>
+					</View>
+				</View>
+			:	<ActivityIndicator size="small" />}
+			{user ?
+				<ScrollView style={styles.content}>
+					<ChangeEmail uid={user.id} oldEmail={user.email} />
+					<ChangePassword uid={user.id} />
+					<ChangeAvatar uid={user.id} />
+					<Logout />
+				</ScrollView>
+			:	<ActivityIndicator size="large" />}
+		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		display: "grid",
-		gridTemplateRows: "auto 1fr auto",
 		flex: 1,
+		gap: 20,
+		marginTop: 40,
+		marginBottom: 80,
+	},
+	title: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.large,
+		color: globalStyles.colors.tertiary,
+		textAlign: "center",
+	},
+	userInfocontainer: {
+		flexDirection: "row",
+		alignSelf: "center",
+		alignItems: "center",
+		gap: 20,
+	},
+	userAvatar: {
+		width: 130,
+		height: 130,
+		borderRadius: 80,
+	},
+	emailInfoContainer: {},
+	emailTitleText: {
+		fontFamily: "RubikMedium",
+		fontSize: 20,
+	},
+	emailText: {
+		fontFamily: "RubikMedium",
+		fontSize: 14,
 	},
 	content: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
+		gap: 10,
 	},
 });

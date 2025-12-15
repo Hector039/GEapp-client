@@ -3,11 +3,14 @@ import { useState } from "react";
 import { changeUserAvatar } from "../../../services/apiEndpoints.js";
 import { useUser } from "../../../context/UserContext.js";
 import * as ImagePicker from "expo-image-picker";
+import CustomLightModal from "../../../tools/CustomLightModal.jsx";
+import { globalStyles } from "../../../stylesConstants.js";
 
 export default function ChangeAvatar({ uid }) {
 	const { setUserAvatar } = useUser();
 
 	const [error, setError] = useState("");
+	const [errorModalVisible, setErrorModalVisible] = useState(false);
 
 	async function handleChangeAvatar() {
 		setError("");
@@ -16,7 +19,7 @@ export default function ChangeAvatar({ uid }) {
 				await ImagePicker.requestMediaLibraryPermissionsAsync();
 
 			if (permissionResult.granted === false)
-				return setError("¡Permiso denegado para acceder a las fotos!");
+				return handleError("¡Permiso denegado para acceder a las fotos!");
 
 			let pickerResult = await ImagePicker.launchImageLibraryAsync({
 				mediaTypes: ["images"],
@@ -50,26 +53,42 @@ export default function ChangeAvatar({ uid }) {
 		}
 	}
 
+	const handleError = (error) => {
+		setError(error);
+		setErrorModalVisible(!errorModalVisible);
+	};
+
 	return (
-		<>
-			{error ?
-				<Text>{error}</Text>
-			:	null}
-			<View style={styles.container}>
-				<TouchableOpacity onPress={handleChangeAvatar}>
-					<Text>Cambiar Avatar</Text>
-				</TouchableOpacity>
-			</View>
-		</>
+		<View style={styles.container}>
+			<TouchableOpacity onPress={handleChangeAvatar} style={styles.avatarButton}>
+				<Text style={styles.avatarButtonText}>Cambiar Avatar</Text>
+			</TouchableOpacity>
+			<CustomLightModal
+				visible={errorModalVisible}
+				onClose={() => setErrorModalVisible(!errorModalVisible)}
+				errorMessage={error}
+			/>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		marginTop: 10,
-		paddingBlock: 10,
 		alignItems: "center",
-		backgroundColor: "#aeaeaeff",
-		width: "90%",
+		marginTop: 30,
+	},
+	avatarButton: {
+		borderColor: globalStyles.colors.secondary,
+		borderWidth: 1,
+		borderRadius: 18,
+		backgroundColor: "#80b34925",
+		paddingVertical: 10,
+		paddingHorizontal: 20,
+	},
+	avatarButtonText: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.medium,
+		color: "#5E5D5D",
+		textAlign: "center",
 	},
 });

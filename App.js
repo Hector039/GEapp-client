@@ -1,20 +1,33 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SignLoginScreen from "./screens/SignLogin/SignLoginScreen.jsx";
-import HomeScreen from "./screens/Home/HomeScreen.jsx";
-import ProfileScreen from "./screens/Profile/ProfileScreen.jsx";
 import PassRestorationScreen from "./screens/SignLogin/PassRestorationScreen.jsx";
 import { UserProvider } from "./context/UserContext.js";
-import GoalScreen from "./screens/Goal/GoalScreen.jsx";
-import ActivityScreen from "./screens/Activity/ActivityScreen.jsx";
-import ChallengesScreen from "./screens/Challenges/ChallengesScreen.jsx";
 import TicScreen from "./screens/SignLogin/TicScreen.jsx";
 import TriviaScreen from "./screens/TriviaScreen/TriviaScreen.jsx";
-import ProjectScreen from "./screens/Project/ProjectScreen.jsx";
+import OnboardingScreen from "./screens/Onboarding/OnboardingScreen.jsx";
+
+import TabNavigator from "./TabNavigator.js";
+
+import { loadFonts } from "./hooks/useFonts.js";
+import { useEffect, useState } from "react";
+import { ActivityIndicator } from "react-native";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+	const [fontsLoaded, setFontsLoaded] = useState(false);
+
+	useEffect(() => {
+		async function load() {
+			await loadFonts();
+			setFontsLoaded(true);
+		}
+		load();
+	}, []);
+
+	if (!fontsLoaded) return <ActivityIndicator size="large" />;
+
 	return (
 		<NavigationContainer>
 			<UserProvider>
@@ -35,38 +48,18 @@ export default function App() {
 						options={{ headerShown: false }}
 					/>
 					<Stack.Screen
-						name="Home"
-						component={HomeScreen}
+						name="Onboarding"
+						component={OnboardingScreen}
 						options={{ headerShown: false }}
 					/>
 					<Stack.Screen
-						name="Challenges"
-						component={ChallengesScreen}
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen
-						name="Activity"
-						component={ActivityScreen}
+						name="MainTabs"
+						component={TabNavigator}
 						options={{ headerShown: false }}
 					/>
 					<Stack.Screen
 						name="Trivia"
 						component={TriviaScreen}
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen
-						name="Profile"
-						component={ProfileScreen}
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen
-						name="Goal"
-						component={GoalScreen}
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen
-						name="Project"
-						component={ProjectScreen}
 						options={{ headerShown: false }}
 					/>
 				</Stack.Navigator>

@@ -12,10 +12,14 @@ import { userLogin } from "../../../services/apiEndpoints.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { passwordRegex, emailRegex } from "../../../tools/regexConstants.js";
 import { useUser } from "../../../context/UserContext.js";
+import { globalStyles } from "../../../stylesConstants";
+import CustomLightModal from "../../../tools/CustomLightModal.jsx";
 
 export default function Login() {
-	const { setUser, setUserAvatar } = useUser();
+	const { setUser, setUserAvatar, setOrgEvent, setProject } = useUser();
 	const navigation = useNavigation();
+
+	const [errorModalVisible, setErrorModalVisible] = useState(false);
 	const [error, setError] = useState("");
 
 	const [email, setEmail] = useState("");
@@ -24,25 +28,44 @@ export default function Login() {
 	const [isRemembered, setIsRemembered] = useState(false);
 
 	const handleLogin = async () => {
-		setError("");
-		if (!email || !password) return setError("Faltan datos");
+		if (!email || !password) return handleError("Faltan datos");
 		if (!emailRegex.test(email))
-			return setError("Correo inválido, verifica e intenta nuevamente");
+			return handleError("Correo inválido, verifica e intenta nuevamente");
 		if (!passwordRegex.test(password))
-			return setError(
+			return handleError(
 				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
 			);
 		try {
 			const responseData = await userLogin(email, password);
-			if (responseData.avatar) setUserAvatar(responseData.avatar);
+
+			if (responseData.user.avatar) setUserAvatar(responseData.user.avatar);
+			if (responseData.orgEvent) setOrgEvent(responseData.orgEvent);
+			if (responseData.project) setProject(responseData.project);
+
 			if (responseData) {
 				console.log("Login data user:", responseData);
-				setUser(responseData);
-				navigation.navigate("Home");
+				setUser(responseData.user);
+				if (responseData.user.registerDate) {
+					const today = new Date();
+					const registerUserDate = new Date(responseData.user.registerDate);
+					if (
+						today.getDate() === registerUserDate.getDate() &&
+						today.getMonth() === registerUserDate.getMonth() &&
+						today.getFullYear() === registerUserDate.getFullYear()
+					) {
+						return navigation.navigate("Onboarding", {
+							orgName: responseData.orgEvent.orgName,
+							steps: responseData.orgEvent.steps,
+							treeGoal: responseData.project.treeGoal,
+							locationProject: responseData.project.location,
+						});
+					}
+				}
+				navigation.navigate("MainTabs", { screen: "Home" });
 			}
 		} catch (error) {
 			console.log(error.message);
-			setError(error.message || "Error de login");
+			handleError(error.message || "Error de login");
 		}
 	};
 
@@ -89,62 +112,106 @@ export default function Login() {
 		loadRememberedState();
 	}, []);
 
+	const handleError = (error) => {
+		setError(error);
+		setErrorModalVisible(!errorModalVisible);
+	};
+
 	return (
 		<View style={styles.container}>
-			{error ?
-				<Text>{error}</Text>
-			:	null}
 			<TextInput
 				placeholder="Correo electrónico"
-				placeholderTextColor="#000000ff"
+				placeholderTextColor="#5E5D5D"
 				value={email}
 				onChangeText={setEmail}
 				keyboardType="email-address"
 				autoCapitalize="none"
+				style={styles.textInput}
 			/>
 			<TextInput
 				placeholder="Contraseña"
-				placeholderTextColor="#000000ff"
+				placeholderTextColor="#5E5D5D"
 				secureTextEntry
 				value={password}
 				onChangeText={setPassword}
+				style={styles.textInput}
 			/>
+
 			<View style={styles.rememberMeContainer}>
-				<Text>Recordarme</Text>
 				<Switch
-					trackColor={{ false: "#767577", true: "#81b0ff" }}
-					thumbColor={isRemembered ? "#f5dd4b" : "#f4f3f4"}
+					trackColor={{ false: "#d8d8d8ff", true: "#67A599" }}
+					thumbColor={isRemembered ? "#80B349" : "#a8a8a8ff"}
 					ios_backgroundColor="#3e3e3e"
 					onValueChange={handleRememberChange}
 					value={isRemembered}
 				/>
+				<Text style={styles.rememberMeText}>Recordarme</Text>
 			</View>
-			<TouchableOpacity onPress={() => handleLogin()}>
-				<Text>Ingresar</Text>
+			<TouchableOpacity onPress={handlePassRestoration}>
+				<Text style={styles.forgotText}>OLVIDÉ mi contraseña</Text>
+			</TouchableOpacity>
+			<TouchableOpacity onPress={() => handleLogin()} style={styles.loginButton}>
+				<Text style={styles.loginButtonText}>Ingresar</Text>
 			</TouchableOpacity>
 
-			<View style={styles.restorationContainer}>
-				<TouchableOpacity onPress={handlePassRestoration}>
-					<Text>Olvidé mi contraseña</Text>
-				</TouchableOpacity>
-			</View>
+			<CustomLightModal
+				visible={errorModalVisible}
+				onClose={() => setErrorModalVisible(!errorModalVisible)}
+				errorMessage={error}
+			/>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		backgroundColor: "#d0d0d0ff",
 		alignItems: "center",
 		justifyContent: "center",
+		borderRadius: 30,
+		borderColor: globalStyles.colors.tertiary,
+		borderWidth: 2,
+		width: "85%",
+		marginBlock: 20,
 	},
-	restorationContainer: {
-		flexDirection: "row",
-		marginTop: 50,
+	textInput: {
+		width: "85%",
+		borderColor: globalStyles.colors.secondary,
+		borderWidth: 1,
+		borderRadius: 18,
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.medium,
+		color: "#5E5D5D",
+		textAlign: "center",
+		backgroundColor: "#80b34925",
+		marginTop: 40,
 	},
 	rememberMeContainer: {
 		flexDirection: "row",
 		alignItems: "center",
+		gap: 15,
+		marginBlock: 15,
+	},
+	rememberMeText: {
+		color: globalStyles.colors.tertiary,
+		fontFamily: "KarlaExtraBold",
+		fontSize: globalStyles.fSizes.medium,
+	},
+	forgotText: {
+		color: globalStyles.colors.tertiary,
+		fontFamily: "KarlaExtraBold",
+		fontSize: globalStyles.fSizes.medium,
+	},
+	loginButton: {
+		width: "45%",
+		borderRadius: 30,
+		backgroundColor: globalStyles.colors.primary,
+		marginBlock: 30,
+	},
+	loginButtonText: {
+		color: "white",
+		fontFamily: "KarlaBold",
+		fontSize: globalStyles.fSizes.large,
+		textAlign: "center",
+		paddingBlock: 15,
 	},
 });

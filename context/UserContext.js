@@ -6,11 +6,16 @@ export const UserContext = createContext(undefined);
 const USER_STORAGE_KEY = "user";
 const USER_AVATAR_PATH_KEY = "userAvatarPath";
 const USER_STEPS_KEY = "userSteps";
+const ORG_EVENT_KEY = "orgEvent";
+const PROJECT_KEY = "project";
 
 export const UserProvider = ({ children }) => {
 	const [user, setUserState] = useState(null);
 	const [userAvatar, setUserAvatarState] = useState(null);
+	const [orgEvent, setOrgEventState] = useState(null);
+	const [project, setProjectState] = useState(null);
 	const [steps, setStepsState] = useState(0);
+	const [subscriptionState, setSubcriptionState] = useState(false);
 
 	// Función para guardar el usuario en el estado y en el storage
 	const setUser = async (userData) => {
@@ -20,6 +25,24 @@ export const UserProvider = ({ children }) => {
 			await AsyncStorage.removeItem(USER_STORAGE_KEY);
 		}
 		setUserState(userData);
+	};
+
+	const setOrgEvent = async (orgData) => {
+		if (orgData) {
+			await AsyncStorage.setItem(ORG_EVENT_KEY, JSON.stringify(orgData));
+		} else {
+			await AsyncStorage.removeItem(ORG_EVENT_KEY);
+		}
+		setOrgEventState(orgData);
+	};
+
+	const setProject = async (projectData) => {
+		if (projectData) {
+			await AsyncStorage.setItem(PROJECT_KEY, JSON.stringify(projectData));
+		} else {
+			await AsyncStorage.removeItem(PROJECT_KEY);
+		}
+		setUsesetProjectStaterState(projectData);
 	};
 
 	const setUserAvatar = async (userAvatarPath) => {
@@ -90,10 +113,40 @@ export const UserProvider = ({ children }) => {
 		}
 	};
 
+	const loadOrgEvent = async () => {
+		try {
+			const storedOrgEvent = await AsyncStorage.getItem(ORG_EVENT_KEY);
+			if (storedOrgEvent) {
+				setOrgEventState(JSON.parse(storedOrgEvent));
+			}
+		} catch (error) {
+			console.error(
+				"Error cargando los los datos del evento desde AsyncStorage:",
+				error
+			);
+		}
+	};
+
+	const loadProject = async () => {
+		try {
+			const storedProject = await AsyncStorage.getItem(PROJECT_KEY);
+			if (storedProject) {
+				setProjectState(JSON.parse(storedProject));
+			}
+		} catch (error) {
+			console.error(
+				"Error cargando los los datos del proyecto desde AsyncStorage:",
+				error
+			);
+		}
+	};
+
 	useEffect(() => {
 		loadUser();
 		loadUserAvatar();
 		loadUserSteps();
+		loadOrgEvent();
+		loadProject();
 	}, []);
 
 	const value = {
@@ -104,6 +157,12 @@ export const UserProvider = ({ children }) => {
 		setUserAvatar,
 		setSteps,
 		steps,
+		subscriptionState,
+		setSubcriptionState,
+		setOrgEvent,
+		setProject,
+		orgEvent,
+		project,
 	};
 
 	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

@@ -5,6 +5,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const axiosInstance = axios.create({
 	baseURL: BASE_URL,
+	timeout: 5000,
 });
 
 axiosInstance.interceptors.request.use(

@@ -1,22 +1,24 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import NavBar from "../../components/NavBar.jsx";
-import RandomChallengeSection from "./components/RandomChallengeSection.jsx";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import UserIndicatorsSection from "./components/UserIndicatorsSection.jsx";
 import HeaderBar from "../../components/HeaderBar.jsx";
-import Start from "./components/Start.jsx";
-import OrgIndicatorsSection from "./components/OrgIndicatorsSection.jsx";
 import { useUser } from "../../context/UserContext.js";
-import SeeMoreBar from "../../components/seeMoreBar.jsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
 	getUserInfoRewards,
 	updateOrgEventSteps,
 	updateUserTotalSteps,
 } from "../../services/apiEndpoints.js";
+import ProjectCard from "./components/ProjectCard.jsx";
+import CustomModal from "../../tools/CustomModal.jsx";
+import { globalStyles } from "../../stylesConstants.js";
 
 export default function HomeScreen() {
-	const { user, setSteps, steps } = useUser();
+	const { user, setSteps, steps, setOrgEvent, orgEvent } = useUser();
+	const [sessionRewardModalVisible, setSessionRewardModalVisible] =
+		useState(false);
+	const [streakRewardModalVisible, setStreakRewardModalVisible] =
+		useState(false);
 
 	async function checkUserRewards(uid) {
 		const date = new Date();
@@ -27,7 +29,26 @@ export default function HomeScreen() {
 		const today = `${year}-${month}-${day}`;
 
 		// --- VERIFICAR SI YA SE PROCESÓ HOY ---
-		const lastCheckDate = await AsyncStorage.getItem("tracker");
+		let lastCheckDate = null;
+		try {
+			lastCheckDate = await AsyncStorage.getItem("tracker");
+		} catch (error) {
+			// Error de lectura (¡corrupción!), limpiamos el valor para forzar el reprocesamiento
+			console.error(
+				"Error de lectura de AsyncStorage (tracker), limpiando...",
+				error
+			);
+			await AsyncStorage.removeItem("tracker");
+		}
+
+		// 1. Añadir verificación de valor corrupto/inválido
+		if (
+			lastCheckDate === null ||
+			lastCheckDate === "undefined" ||
+			lastCheckDate === "null"
+		) {
+			lastCheckDate = null; // Normalizar a null si el valor es inválido pero no falló la lectura
+		}
 		console.log("Última verificación de recompensa:", lastCheckDate);
 
 		if (lastCheckDate === today) {
@@ -38,6 +59,8 @@ export default function HomeScreen() {
 			//en el backend Busca la session de ayer IMPORTANTE
 			const responseData = await getUserInfoRewards(uid, today);
 			console.log("userInfo rewards in HomeScreen:", responseData);
+			await AsyncStorage.setItem("tracker", today);
+			console.log("Recompensas procesadas y marcadas para hoy:", today);
 			//Si existe la sesión de ayer, reviso la cantidad de pasos para premiar
 			// y aumento o elimino la racha según el caso
 			if (responseData) {
@@ -46,6 +69,7 @@ export default function HomeScreen() {
 						"Felicitaciones! Superaste los pasos recomendados en una sola sesion. ganaste 200 pasos!"
 					);
 					// modal y actualizar pasos usuario y orgEvent
+					setSessionRewardModalVisible(true);
 					try {
 						const updateResponse = await updateUserTotalSteps(
 							uid,
@@ -58,7 +82,7 @@ export default function HomeScreen() {
 					}
 
 					try {
-						await updateOrgEventSteps(user.orgEvent._id, user.SESSION_REWARD);
+						await updateOrgEventSteps(orgEvent._id, user.SESSION_REWARD);
 					} catch (error) {
 						console.log("Error updating Org Event total steps:", error);
 					}
@@ -69,17 +93,39 @@ export default function HomeScreen() {
 				console.log("Streak in LS:", streakCount);
 
 				if (streakCount && responseData.steps > 500) {
-					const parsedStreakCount = JSON.parse(streakCount);
-					await AsyncStorage.setItem(
-						"streak",
-						JSON.stringify(parsedStreakCount + 1)
-					);
+					let parsedStreakCount = 0;
+					try {
+						parsedStreakCount = JSON.parse(streakCount);
+						// Validación de tipo: Asegurar que es un número
+						if (typeof parsedStreakCount !== "number" || isNaN(parsedStreakCount)) {
+							throw new Error("Streak is not a number.");
+						}
+					} catch (parseError) {
+						// Si falla el parseo o la validación, reiniciamos la racha a 0.
+						console.warn("Error de parseo de racha. Reiniciando...", parseError);
+						parsedStreakCount = 0;
+						await AsyncStorage.removeItem("streak");
+						// No continuamos con el proceso de racha para evitar más errores
+					}
+					// Solo si la racha fue válida, continuamos con el incremento
+					if (parsedStreakCount > 0) {
+						// Si se reinició a 0, no entra aquí, solo en el else de abajo
+						// ... (Toda la lógica de incremento y premio de racha) ...
+						await AsyncStorage.setItem(
+							"streak",
+							JSON.stringify(parsedStreakCount + 1)
+						);
+					} else {
+						// Si no había racha o se reinició por error, la iniciamos en 1 si cumple con los pasos
+						await AsyncStorage.setItem("streak", JSON.stringify(1));
+					}
 					//si la racha es igual a 5, premio con pasos y luego reinicio el conteo
 					if (parsedStreakCount + 1 === 5) {
 						console.log(
 							"Felicitaciones! Tuviste una racha de 5 días de caminatas. ganaste 500 pasos!"
 						);
 						// modal y actualizar pasos usuario y orgEvent
+						setStreakRewardModalVisible(true);
 						try {
 							const updateResponse = await updateUserTotalSteps(
 								uid,
@@ -92,22 +138,19 @@ export default function HomeScreen() {
 						}
 
 						try {
-							await updateOrgEventSteps(user.orgEvent._id, user.STREAK_REWARD);
+							await updateOrgEventSteps(orgEvent._id, user.STREAK_REWARD);
 						} catch (error) {
 							console.log("Error updating Org Event total steps:", error);
 						}
 						await AsyncStorage.removeItem("streak");
 					}
-				} else {
-					await AsyncStorage.setItem("streak", JSON.stringify(1));
 				}
 			} else {
 				await AsyncStorage.removeItem("streak");
 			}
-			await AsyncStorage.setItem("tracker", today);
-			console.log("Recompensas procesadas y marcadas para hoy:", today);
 		} catch (error) {
 			console.log(error);
+			await AsyncStorage.removeItem("tracker", today);
 		}
 	}
 
@@ -117,51 +160,72 @@ export default function HomeScreen() {
 
 	return (
 		<View style={styles.container}>
-			<HeaderBar />
 			{user ?
-				<ScrollView style={styles.content}>
-					<View style={styles.projectTitleContainer}>
-						<SeeMoreBar
-							title={"Proyecto activo:" + " " + user.orgEvent.projectId.name}
-							destiny={"Project"}
-						/>
-					</View>
+				<HeaderBar title={"Home"} subTitle={"Tu acción suma"} />
+			:	<ActivityIndicator size="small" />}
+			{user ?
+				<View style={styles.content}>
+					<ProjectCard
+						userTotalSteps={user.totalSteps}
+						userOrgEventId={orgEvent._id}
+					/>
 
-					<View style={styles.startButtonContainer}>
-						<Start />
-					</View>
-					<OrgIndicatorsSection eid={user.orgEvent._id} />
 					<UserIndicatorsSection
 						uid={user.id}
 						recommendedSteps={user.RECOMMENDED_DAILY_STEPS}
-						eid={user.orgEvent._id}
+						hoursToCountSteps={user.HOURS_TO_COUNT_STEPS}
+						eid={orgEvent._id}
 						setSteps={setSteps}
 						steps={steps}
 					/>
-					<RandomChallengeSection uid={user.id} />
-				</ScrollView>
-			:	<Text style={styles.content}>Cargando...</Text>}
-			<NavBar />
+				</View>
+			:	<ActivityIndicator size="large" />}
+
+			<CustomModal
+				visible={sessionRewardModalVisible}
+				onClose={() => setSessionRewardModalVisible(false)}
+				title="Felicitaciones!"
+				message="Superaste los pasos recomendados en una sola sesión. Ganaste 200 pasos!."
+				backgroundColor="#67a59958"
+				iconName="checkmark-circle-outline"
+				iconColor={globalStyles.colors.primary}
+				buttons={[
+					{
+						text: "Aceptar",
+						onPress: () => {
+							setSessionRewardModalVisible(false);
+						},
+						style: { backgroundColor: globalStyles.colors.tertiary },
+					},
+				]}
+			/>
+			<CustomModal
+				visible={streakRewardModalVisible}
+				onClose={() => setStreakRewardModalVisible(false)}
+				title="Felicitaciones!"
+				message="Tuviste una racha de 5 días de caminatas. Ganaste 500 pasos!."
+				backgroundColor="#67a59958"
+				iconName="checkmark-circle-outline"
+				iconColor={globalStyles.colors.primary}
+				buttons={[
+					{
+						text: "Aceptar",
+						onPress: () => {
+							setStreakRewardModalVisible(false);
+						},
+						style: { backgroundColor: globalStyles.colors.tertiary },
+					},
+				]}
+			/>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		display: "grid",
-		gridTemplateRows: "auto 1fr auto",
 		flex: 1,
 	},
-	projectTitle: {
-		textAlign: "center",
-	},
-	startButtonContainer: {
-		alignItems: "center",
-		marginVertical: 30,
-	},
-	projectTitleContainer: {
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: "#d0d0d0ff",
+	content: {
+		gap: 25,
 	},
 });

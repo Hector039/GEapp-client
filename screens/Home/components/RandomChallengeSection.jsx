@@ -2,10 +2,11 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { getRandomChallenge } from "../../../services/apiEndpoints";
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { globalStyles } from "../../../stylesConstants";
+import PlayIcon from "../assets/play.svg";
 
 export default function RandomChallengeSection({ uid }) {
 	const navigation = useNavigation();
-	const [error, setError] = useState("");
 	const [lastChallenge, setLastChallenge] = useState(null);
 
 	async function fetchRandomChallenge() {
@@ -14,7 +15,6 @@ export default function RandomChallengeSection({ uid }) {
 			if (responseData) setLastChallenge(responseData);
 		} catch (error) {
 			console.log(error);
-			setError("Error al cargar el desafío activo");
 		}
 	}
 
@@ -31,51 +31,86 @@ export default function RandomChallengeSection({ uid }) {
 
 	return (
 		<View style={styles.container}>
-			{error ?
-				<Text>{error}</Text>
-			:	null}
 			{lastChallenge ?
-				<View style={styles.challengeContainer}>
-					<Image
-						style={styles.image}
-						source={
-							lastChallenge.icon ?
-								{ uri: lastChallenge.icon }
-							:	require("../../../assets/default-avatar.png")
-						}
-						resizeMode="contain"
-					/>
-					<View>
-						<Text>{lastChallenge.title}</Text>
-						<Text>Recompensa: {lastChallenge.reward} pasos</Text>
+				<View style={styles.challengeCard}>
+					<Text style={styles.title}>{lastChallenge.title}</Text>
+					<View style={styles.challengeContainer}>
+						<Image
+							style={styles.image}
+							source={require("../assets/mountainBig.png")}
+							resizeMode="contain"
+						/>
+						<View style={styles.challengeInfoContainer}>
+							<Text style={styles.typeText}>Tipo de desafío: Trivia</Text>
+							<Text style={styles.themeText}>Tema: {lastChallenge.title}</Text>
+							<TouchableOpacity
+								onPress={handleGoToChallenge}
+								style={styles.startButton}
+							>
+								<PlayIcon width={50} height={50} />
+								<Text style={styles.startText}>Iniciar desafío</Text>
+							</TouchableOpacity>
+						</View>
 					</View>
-					<TouchableOpacity onPress={handleGoToChallenge}>
-						<Text>Iniciar</Text>
-					</TouchableOpacity>
 				</View>
-			:	<Text>Todavía no hay desafíos, intenta más tarde</Text>}
+			:	<Text>Aún no hay desafíos, intenta más tarde.</Text>}
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		backgroundColor: "#d0d0d0ff",
 		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: 20,
+		alignSelf: "center",
+		borderRadius: 30,
+		borderColor: globalStyles.colors.primary,
+		borderWidth: 1,
+		width: "90%",
+	},
+	challengeCard: {
+		paddingVertical: 20,
+		paddingHorizontal: 20,
 	},
 	challengeContainer: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "space-between",
 		width: "90%",
-		padding: 10,
+		gap: 10,
 	},
+	challengeInfoContainer: {},
 	image: {
+		width: 130,
+		height: 130,
+	},
+	title: {
+		fontFamily: "RubikBold",
+		fontSize: 18,
+		marginBottom: 10,
+	},
+	statusbar: {
+		justifyContent: "center",
+	},
+	startButton: {
+		justifyContent: "center",
+		alignItems: "center",
+		marginTop: 15,
+	},
+	startImage: {
 		width: 50,
 		height: 50,
-		borderRadius: 50,
+	},
+	startText: {
+		fontFamily: "RubikBold",
+		fontSize: 20,
+		color: globalStyles.colors.primary,
+	},
+	typeText: {
+		fontFamily: "RubikBold",
+		color: "#0000009e",
+	},
+	themeText: {
+		fontFamily: "RubikMedium",
+		color: "#00000071",
 	},
 });

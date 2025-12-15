@@ -1,59 +1,112 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import NavBar from "../../components/NavBar.jsx";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 import HeaderBar from "../../components/HeaderBar.jsx";
 import { useUser } from "../../context/UserContext.js";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getInfoProject } from "../../services/apiEndpoints.js";
+import ProjectCard from "../Home/components/ProjectCard.jsx";
+import { globalStyles } from "../../stylesConstants.js";
 
 export default function ProjectScreen() {
-	const [error, setError] = useState("");
-	const [project, setProject] = useState(null);
-	const { user } = useUser();
+	const { user, project, setProject, orgEvent } = useUser();
 
 	useEffect(() => {
-		if (user) fetchInfoProject(user.orgEvent.projectId._id);
+		if (project) fetchInfoProject(project._id);
 	}, []);
 
 	async function fetchInfoProject(pid) {
 		try {
 			const responseData = await getInfoProject(pid);
-			console.log("Info project in poject Screen:", responseData);
+			console.log("Info project in project Screen:", responseData);
 
 			if (responseData) setProject(responseData);
 		} catch (error) {
 			console.log(error);
-			setError("Error al cargar información del proyecto activo");
 		}
 	}
 
 	return (
 		<View style={styles.container}>
-			<HeaderBar />
+			{user ?
+				<HeaderBar title={"Proyecto"} subTitle={""} />
+			:	<ActivityIndicator size="small" />}
 			{project ?
-				<ScrollView contentContainerStyle={styles.projectContainer}>
-					{error && <Text>{error}</Text>}
-					<Text>{project.name}</Text>
-					<Text>Ubicación: {project.location}</Text>
-					<Text>{project.descr}</Text>
-				</ScrollView>
-			:	<Text>No se encontró un projecto activo, intenta más tarde</Text>}
+				<View style={styles.projectContainer}>
+					<ProjectCard
+						userTotalSteps={user.totalSteps}
+						userOrgEventId={orgEvent._id}
+					/>
 
-			<NavBar />
+					<View style={styles.impactCard}>
+						<Text style={styles.title}>Impacto</Text>
+						<View style={styles.infoSection}>
+							<Image
+								style={styles.footPrint}
+								source={require("./assets/eco_footprint.png")}
+							/>
+							<View style={styles.textSection}>
+								<View>
+									<Text style={styles.textInfo}>Proyecto:</Text>
+									<Text style={styles.textInfo}>{project.name}</Text>
+								</View>
+								<View>
+									<Text style={styles.textInfo}>Lugar:</Text>
+									<Text style={styles.textInfo}>{project.location}</Text>
+								</View>
+							</View>
+						</View>
+						<Text style={styles.descr}>{project.descr}</Text>
+					</View>
+				</View>
+			:	<ActivityIndicator size="large" />}
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		display: "grid",
-		gridTemplateRows: "auto 1fr auto",
 		flex: 1,
 	},
 	projectContainer: {
-		flex: 1,
-		justifyContent: "center",
+		gap: 25,
+	},
+	title: {
+		fontFamily: "RubikBold",
+		fontSize: globalStyles.fSizes.large,
+		color: globalStyles.colors.tertiary,
+		paddingVertical: 15,
+		paddingLeft: 15,
+	},
+	impactCard: {
+		marginVertical: 15,
+		borderRadius: 20,
+		borderColor: "#D0DBE2",
+		borderWidth: 1,
+		width: "88%",
+		alignSelf: "center",
+	},
+	infoSection: {
+		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: 20,
+		justifyContent: "center",
+		gap: 35,
+	},
+	footPrint: {
+		width: 90,
+		height: 130,
+	},
+	textSection: {
+		gap: 20,
+	},
+	textInfo: {
+		fontFamily: "RubikBold",
+		fontSize: globalStyles.fSizes.medium,
+	},
+	descr: {
+		fontFamily: "RubikMedium",
+		fontSize: globalStyles.fSizes.small,
+		color: globalStyles.colors.tertiary,
 		paddingHorizontal: 30,
+		marginVertical: 30,
+		textAlign: "center",
 	},
 });
