@@ -6,6 +6,7 @@ import {
 	TouchableOpacity,
 	StyleSheet,
 	StatusBar,
+	ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { restorePassword } from "../../services/apiEndpoints.js";
@@ -23,12 +24,15 @@ export default function PassRestorationScreen() {
 
 	const [error, setError] = useState("");
 	const [errorModalVisible, setErrorModalVisible] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [rePassword, setRePassword] = useState("");
 
 	const handleRestorePassword = async () => {
+		if (isLoading) return;
+		setIsLoading(true);
 		try {
 			if (!email || !password || !rePassword) return handleError("Faltan datos");
 			if (password !== rePassword)
@@ -43,9 +47,14 @@ export default function PassRestorationScreen() {
 
 			try {
 				const responseData = await restorePassword(email, password);
-				if (responseData) setModalVisible(true);
+				if (responseData.ok) {
+					setIsLoading(false);
+					setModalVisible(true);
+				}
 			} catch (error) {
 				handleError("Error al enviar datos de restauración");
+			} finally {
+				setIsLoading(false);
 			}
 		} catch (error) {
 			console.log("Login error:", error);
@@ -59,6 +68,7 @@ export default function PassRestorationScreen() {
 	const handleError = (error) => {
 		setError(error);
 		setErrorModalVisible(!errorModalVisible);
+		setIsLoading(false);
 	};
 
 	return (
@@ -104,9 +114,11 @@ export default function PassRestorationScreen() {
 					/>
 					<TouchableOpacity
 						onPress={() => handleRestorePassword()}
-						style={styles.sendButton}
+						style={[styles.sendButton, isLoading && styles.disabledButton]}
 					>
-						<Text style={styles.sendButtonText}>Enviar</Text>
+						{isLoading ?
+							<ActivityIndicator color="#fff" />
+						:	<Text style={styles.sendButtonText}>Enviar</Text>}
 					</TouchableOpacity>
 				</View>
 
@@ -130,9 +142,9 @@ export default function PassRestorationScreen() {
 					onClose={() => setModalVisible(false)}
 					title="Exito!"
 					message="Por favor revisa tu email para confirmar tu nuevo password."
-					backgroundColor="#e6ffe6" // Fondo verde claro
+					backgroundColor="#e6ffe6"
 					iconName="checkmark-circle-outline"
-					iconColor="green"
+					iconColor={globalStyles.colors.primary}
 					buttons={[
 						{
 							text: "Aceptar",
@@ -143,7 +155,7 @@ export default function PassRestorationScreen() {
 									routes: [{ name: "SignLogin" }],
 								});
 							},
-							style: { backgroundColor: "green" },
+							style: { backgroundColor: globalStyles.colors.primary },
 						},
 					]}
 				/>
@@ -199,9 +211,13 @@ const styles = StyleSheet.create({
 	},
 	sendButton: {
 		width: "45%",
+		height: 60,
 		borderRadius: 30,
 		backgroundColor: globalStyles.colors.primary,
 		marginBlock: 30,
+	},
+	disabledButton: {
+		justifyContent: "center",
 	},
 	sendButtonText: {
 		color: "white",

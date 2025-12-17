@@ -13,6 +13,8 @@ import ChangeEmail from "./components/changeEmail.jsx";
 import ChangeAvatar from "./components/changeAvatar.jsx";
 import { globalStyles } from "../../stylesConstants.js";
 import { SafeAreaView } from "react-native-safe-area-context";
+import TicButton from "./components/ticButton.jsx";
+import DeactivateAccountButton from "./components/deactivateAccountButton.jsx";
 
 export default function ProfileScreen() {
 	const { user, userAvatar } = useUser();
@@ -42,6 +44,8 @@ export default function ProfileScreen() {
 					<ChangePassword uid={user.id} />
 					<ChangeAvatar uid={user.id} />
 					<Logout />
+					<TicButton />
+					<DeactivateAccountButton uid={user.id} />
 				</ScrollView>
 			:	<ActivityIndicator size="large" />}
 		</SafeAreaView>

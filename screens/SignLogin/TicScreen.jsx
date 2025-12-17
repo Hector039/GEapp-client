@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-	Text,
-	StyleSheet,
-	ScrollView,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getTicText } from "../../services/apiEndpoints";
 import Markdown from "react-native-markdown-display";
@@ -13,8 +7,9 @@ import Logo from "../../assets/geLogo01.svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { globalStyles } from "../../stylesConstants";
 
-export default function TicScreen() {
+export default function TicScreen({ route }) {
 	const navigation = useNavigation();
+	const { comingFrom } = route.params;
 	const [ticText, setTicText] = useState(null);
 	const [error, setError] = useState("");
 
@@ -28,7 +23,10 @@ export default function TicScreen() {
 		}
 	};
 
-	const handleBackToSignIn = () => navigation.navigate("SignLogin");
+	function handleBack() {
+		if (comingFrom === "signin") return navigation.navigate("SignLogin");
+		navigation.navigate("MainTabs", { screen: "Profile" });
+	}
 
 	useEffect(() => {
 		fetchTicText();
@@ -45,10 +43,7 @@ export default function TicScreen() {
 				{error ?
 					<Text>{error}</Text>
 				:	<Markdown>{ticText}</Markdown>}
-				<TouchableOpacity
-					style={styles.backButton}
-					onPress={() => handleBackToSignIn()}
-				>
+				<TouchableOpacity style={styles.backButton} onPress={handleBack}>
 					<Text style={styles.backButtonText}>Volver</Text>
 				</TouchableOpacity>
 			</ScrollView>

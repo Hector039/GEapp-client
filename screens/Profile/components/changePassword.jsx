@@ -99,14 +99,14 @@ export default function ChangePassword({ uid }) {
 				message="Recuerda usar tu nueva contraseña en tu próximo logueo."
 				backgroundColor="#e6ffe6"
 				iconName="checkmark-circle-outline"
-				iconColor="green"
+				iconColor={globalStyles.colors.primary}
 				buttons={[
 					{
 						text: "Aceptar",
 						onPress: () => {
 							setModalVisible(false);
 						},
-						style: { backgroundColor: "green" },
+						style: { backgroundColor: globalStyles.colors.primary },
 					},
 				]}
 			/>
@@ -117,7 +117,7 @@ export default function ChangePassword({ uid }) {
 				message="Estás seguro? Vas a cambiar tu contraseña."
 				backgroundColor="#e6ffe6"
 				iconName="warning-outline"
-				iconColor="green"
+				iconColor={globalStyles.colors.primary}
 				buttons={[
 					{
 						text: "Aceptar",
@@ -125,7 +125,7 @@ export default function ChangePassword({ uid }) {
 							setWarningModalVisible(false);
 							handleChangePassword();
 						},
-						style: { backgroundColor: "green" },
+						style: { backgroundColor: globalStyles.colors.primary },
 					},
 				]}
 			/>

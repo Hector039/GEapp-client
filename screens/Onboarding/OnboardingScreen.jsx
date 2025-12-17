@@ -33,7 +33,7 @@ export default function OnboardingScreen() {
 			id: 2,
 			image: Onboarding2png,
 			title: `${orgName} desafió asus empleados a caminar`,
-			text: `Los empleados deben caminar ${steps} pasos en un tiempo especificado.`,
+			text: `Los empleados deben caminar cierta cantidad de pasos en un tiempo especificado.`,
 		},
 		{
 			id: 3,

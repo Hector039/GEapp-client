@@ -69,12 +69,16 @@ export default function UserIndicatorsSection({
 			const startCountingSteps = await AsyncStorage.getItem("startCountingSteps");
 
 			if (!startCountingSteps) return;
+
 			const parsedStartCountingSteps = new Date(JSON.parse(startCountingSteps));
+
 			let endCountingSteps = await AsyncStorage.getItem("endCountingSteps");
 			endCountingSteps =
-				endCountingSteps ? new Date(JSON.parse(endCountingSteps)) : null;
+				endCountingSteps ?
+					new Date(JSON.parse(endCountingSteps)).toISOString()
+				:	null;
 
-			if (!endCountingSteps) {
+			if (endCountingSteps === null) {
 				const endCountingStepsTwoHours =
 					parsedStartCountingSteps.getTime() +
 					(hoursToCountSteps || 2) * 60 * 60 * 1000;

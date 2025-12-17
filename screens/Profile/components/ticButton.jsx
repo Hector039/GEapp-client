@@ -1,36 +1,28 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useUser } from "../../../context/UserContext.js";
 import { useNavigation } from "@react-navigation/native";
 import { globalStyles } from "../../../stylesConstants.js";
 
-export default function Logout() {
+export default function TicButton() {
 	const navigation = useNavigation();
-	const { logout } = useUser();
 
-	function handleLogout() {
-		logout();
-		navigation.reset({
-			index: 0,
-			routes: [{ name: "SignLogin" }],
-		});
-	}
+	const handleGoToTic = () =>
+		navigation.navigate("Tic", { comingFrom: "profile" });
 
 	return (
-		<TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-			<Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+		<TouchableOpacity style={styles.ticButton} onPress={handleGoToTic}>
+			<Text style={styles.ticButtonText}>Términos y condiciones</Text>
 		</TouchableOpacity>
 	);
 }
 
 const styles = StyleSheet.create({
-	logoutButton: {
+	ticButton: {
 		alignSelf: "center",
 		borderTopWidth: 2,
 		borderTopColor: globalStyles.colors.secondary,
 		width: "85%",
-		marginTop: 30,
 	},
-	logoutButtonText: {
+	ticButtonText: {
 		fontFamily: "RubikMedium",
 		fontSize: globalStyles.fSizes.medium,
 		color: globalStyles.colors.tertiary,

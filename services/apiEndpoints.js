@@ -3,12 +3,14 @@ import axios from "./axiosInstance";
 const ENDPOINTS = {
 	userLogin: "users/login",
 	userSignUp: "users/signin",
-	restorePassword: "users/restorepass",
+	restorePassword: "users/passrestoration",
 	changePass: "users/changepassword",
 	changeUserEmail: "users/changeemail",
 	changeUserAvatar: "users/changeavatar",
 	getUserTotalSteps: "users/getusertotalsteps",
 	updateUserTotalSteps: "users/updateusertotalsteps",
+	deactivateAccount: "users/updateuserstatus",
+	reactivateUserAccount: "users/reactivateuserstatus",
 	getUserInfoRewards: "sessions/getuserinforewards",
 	saveUserSession: "sessions/saveusersession",
 	getRandomChallenge: "challenges/getrandomchallenge",
@@ -247,9 +249,10 @@ export const userSignUp = async (email, password) => {
 };
 
 export const restorePassword = async (email, password) => {
-	const payload = { email, password };
 	try {
-		const response = await axios.post(ENDPOINTS.restorePassword, payload);
+		const response = await axios.get(
+			ENDPOINTS.restorePassword + `/${email}` + `/${password}`
+		);
 		return response.data;
 	} catch (error) {
 		const errorMessage =
@@ -321,6 +324,36 @@ export const getUserTotalSteps = async (uid) => {
 				`Error ${error.response.status}: Error en el servidor`
 			:	"Error de red o timeout";
 		console.error("Error en getUserTotalSteps:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const deactivateAccount = async (uid) => {
+	try {
+		const response = await axios.put(ENDPOINTS.deactivateAccount + `/${uid}`);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en deactivateAccount:", errorMessage, error);
+		throw new Error(errorMessage);
+	}
+};
+
+export const reactivateUserAccount = async (uid) => {
+	try {
+		const response = await axios.put(ENDPOINTS.reactivateUserAccount + `/${uid}`);
+		return response.data;
+	} catch (error) {
+		const errorMessage =
+			error.response ?
+				error.response.data.message ||
+				`Error ${error.response.status}: Error en el servidor`
+			:	"Error de red o timeout";
+		console.error("Error en reactivateUserAccount:", errorMessage, error);
 		throw new Error(errorMessage);
 	}
 };

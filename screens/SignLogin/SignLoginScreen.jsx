@@ -64,16 +64,19 @@ export default function SignLoginScreen() {
 				{/* <Button
 					title="Reset Storage"
 					onPress={async () => {
-						await AsyncStorage.removeItem("user");
-						await AsyncStorage.removeItem("userAvatarPath");
-						await AsyncStorage.removeItem("userSteps");
-						await AsyncStorage.removeItem("streak");
-						await AsyncStorage.removeItem("tracker");
-						await AsyncStorage.removeItem("startCountingSteps");
-						await AsyncStorage.removeItem("endCountingSteps");
-						await AsyncStorage.removeItem("isRemembered");
-						await AsyncStorage.removeItem("userEmail");
-						await AsyncStorage.removeItem("userPassword");
+						// const userInLs = await AsyncStorage.getItem("user");
+						// console.log("user in LS: ", JSON.parse(userInLs));
+
+						// await AsyncStorage.removeItem("user");
+						// await AsyncStorage.removeItem("userAvatarPath");
+						// await AsyncStorage.removeItem("userSteps");
+						// await AsyncStorage.removeItem("streak");
+						// await AsyncStorage.removeItem("tracker");
+						// await AsyncStorage.removeItem("startCountingSteps");
+						// await AsyncStorage.removeItem("endCountingSteps");
+						// await AsyncStorage.removeItem("isRemembered");
+						// await AsyncStorage.removeItem("userEmail");
+						// await AsyncStorage.removeItem("userPassword");
 						console.log("Storage limpio");
 					}}
 				/> */}

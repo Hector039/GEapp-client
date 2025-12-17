@@ -35,7 +35,7 @@ export default function ChangeEmail({ uid, oldEmail }) {
 			return handleError("El nuevo correo debe ser diferente al anterior");
 		try {
 			const responseData = await changeUserEmail(uid, newEmail);
-			console.log("changePass data:", responseData);
+			console.log("changeEmail data:", responseData);
 			if (responseData) setModalVisible(true);
 		} catch (error) {
 			console.log(error.response.data.error);

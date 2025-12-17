@@ -5,6 +5,7 @@ import {
 	TouchableOpacity,
 	View,
 	Switch,
+	ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { userSignUp } from "../../../services/apiEndpoints.js";
@@ -22,12 +23,15 @@ export default function SignIn() {
 
 	const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 	const [acceptTic, setAcceptTic] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [rePassword, setRePassword] = useState("");
 
 	const handleSignIn = async () => {
+		if (isLoading) return;
+		setIsLoading(true);
 		if (!email || !password || !rePassword) return handleError("Faltan datos");
 		if (password !== rePassword)
 			return handleError("Las contraseñas no coinciden");
@@ -43,15 +47,21 @@ export default function SignIn() {
 		try {
 			const responseData = await userSignUp(email, password);
 			console.log("SignIn data:", responseData);
-			if (responseData) setIsSuccessModalVisible(true);
+			if (responseData.ok) {
+				setIsLoading(false);
+				setIsSuccessModalVisible(true);
+			}
 		} catch (error) {
 			console.log("SignIn data error:", error.message);
+			setIsLoading(false);
 			handleError(error.message || "Error de registro");
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
 	const handleTic = () => {
-		navigation.navigate("Tic");
+		navigation.navigate("Tic", { comingFrom: "signin" });
 	};
 
 	const handleAcceptSwitch = () => {
@@ -61,6 +71,7 @@ export default function SignIn() {
 	const handleError = (error) => {
 		setError(error);
 		setErrorModalVisible(!errorModalVisible);
+		setIsLoading(false);
 	};
 
 	return (
@@ -108,9 +119,12 @@ export default function SignIn() {
 
 			<TouchableOpacity
 				onPress={() => handleSignIn()}
-				style={styles.registerButton}
+				style={[styles.registerButton, isLoading && styles.disabledButton]}
+				disabled={isLoading}
 			>
-				<Text style={styles.registerButtonText}>Ingresar</Text>
+				{isLoading ?
+					<ActivityIndicator color="#fff" />
+				:	<Text style={styles.registerButtonText}>Ingresar</Text>}
 			</TouchableOpacity>
 
 			<CustomLightModal
@@ -123,7 +137,7 @@ export default function SignIn() {
 				visible={isSuccessModalVisible}
 				onClose={() => setIsSuccessModalVisible(false)}
 				title="Bienvenido!"
-				message="Por favor revisa tu email para verificar tu cuenta."
+				message="Por favor inicia sesión para comenzar."
 				backgroundColor="#e6ffe6"
 				iconName="checkmark-circle-outline"
 				iconColor={globalStyles.colors.primary}
@@ -199,9 +213,13 @@ const styles = StyleSheet.create({
 	},
 	registerButton: {
 		width: "45%",
+		height: 60,
 		borderRadius: 30,
 		backgroundColor: globalStyles.colors.primary,
 		marginBlock: 30,
+	},
+	disabledButton: {
+		justifyContent: "center",
 	},
 	registerButtonText: {
 		color: "white",
