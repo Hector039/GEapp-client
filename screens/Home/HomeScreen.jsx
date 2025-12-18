@@ -14,7 +14,7 @@ import CustomModal from "../../tools/CustomModal.jsx";
 import { globalStyles } from "../../stylesConstants.js";
 
 export default function HomeScreen() {
-	const { user, setSteps, steps, setOrgEvent, orgEvent } = useUser();
+	const { user, setSteps, steps, orgEvent } = useUser();
 	const [sessionRewardModalVisible, setSessionRewardModalVisible] =
 		useState(false);
 	const [streakRewardModalVisible, setStreakRewardModalVisible] =
@@ -59,7 +59,7 @@ export default function HomeScreen() {
 			//en el backend Busca la session de ayer IMPORTANTE
 			const responseData = await getUserInfoRewards(uid, today);
 			console.log("userInfo rewards in HomeScreen:", responseData);
-			await AsyncStorage.setItem("tracker", today);
+			await AsyncStorage.setItem("tracker", JSON.stringify(today));
 			console.log("Recompensas procesadas y marcadas para hoy:", today);
 			//Si existe la sesión de ayer, reviso la cantidad de pasos para premiar
 			// y aumento o elimino la racha según el caso
