@@ -92,7 +92,7 @@ export default function HomeScreen() {
 				const streakCount = await AsyncStorage.getItem("streak");
 				console.log("Streak in LS:", streakCount);
 
-				if (streakCount && responseData.steps > 500) {
+				if (streakCount && responseData.steps > 2000) {
 					let parsedStreakCount = 0;
 					try {
 						parsedStreakCount = JSON.parse(streakCount);
