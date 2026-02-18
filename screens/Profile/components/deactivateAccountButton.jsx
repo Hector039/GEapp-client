@@ -31,7 +31,7 @@ export default function DeactivateAccountButton({ uid }) {
 	}
 
 	return (
-		<TouchableOpacity style={styles.ticButton} onPress={handleDeactivate}>
+		<TouchableOpacity onPress={handleDeactivate}>
 			<Text style={styles.ticButtonText}>Desactivar cuenta</Text>
 			<CustomModal
 				visible={warningModalVisible}
@@ -64,15 +64,6 @@ export default function DeactivateAccountButton({ uid }) {
 }
 
 const styles = StyleSheet.create({
-	ticButton: {
-		alignSelf: "center",
-		marginBottom: 30,
-		borderTopWidth: 2,
-		borderBottomWidth: 2,
-		borderTopColor: globalStyles.colors.secondary,
-		borderBottomColor: globalStyles.colors.secondary,
-		width: "85%",
-	},
 	ticButtonText: {
 		fontFamily: "RubikMedium",
 		fontSize: globalStyles.fSizes.medium,

@@ -40,7 +40,7 @@ export default function SignIn() {
 			return handleError("Correo inválido, verifica e intenta nuevamente");
 		if (!passwordRegex.test(password))
 			return handleError(
-				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales",
 			);
 		if (!acceptTic)
 			return handleError("Debes aceptar los Términos y condiciones");
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
 		borderColor: globalStyles.colors.tertiary,
 		borderWidth: 2,
 		width: "85%",
-		marginBlock: 20,
+		marginBottom: 30,
 	},
 	textInput: {
 		width: "85%",
@@ -180,10 +180,10 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		backgroundColor: "#80b34925",
 		marginTop: 30,
+		paddingBlock: 13,
 	},
 	switchContainer: {
 		flexDirection: "row",
-		alignItems: "center",
 		gap: 10,
 		marginTop: 15,
 	},
@@ -196,19 +196,19 @@ const styles = StyleSheet.create({
 		color: "black",
 	},
 	ticContainer: {
-		flexDirection: "column",
-		alignItems: "flex-start",
-		gap: 10,
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 5,
 	},
 	ticText: {
 		color: globalStyles.colors.tertiary,
 		fontFamily: "KarlaExtraBold",
-		fontSize: globalStyles.fSizes.medium,
+		fontSize: globalStyles.fSizes.small,
 	},
 	ticTextTerms: {
 		color: globalStyles.colors.tertiary,
 		fontFamily: "KarlaExtraBold",
-		fontSize: globalStyles.fSizes.medium,
+		fontSize: globalStyles.fSizes.small,
 		textDecorationLine: "underline",
 	},
 	registerButton: {
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
 		height: 60,
 		borderRadius: 30,
 		backgroundColor: globalStyles.colors.primary,
-		marginBlock: 30,
+		marginBlock: 20,
 	},
 	disabledButton: {
 		justifyContent: "center",

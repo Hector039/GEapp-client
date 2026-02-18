@@ -1,9 +1,14 @@
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import {
+	ActivityIndicator,
+	StyleSheet,
+	View,
+	ScrollView,
+	RefreshControl,
+} from "react-native";
 import UserIndicatorsSection from "./components/UserIndicatorsSection.jsx";
 import HeaderBar from "../../components/HeaderBar.jsx";
 import { useUser } from "../../context/UserContext.js";
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useCallback, useEffect, useState } from "react";
 import {
 	getUserInfoRewards,
 	updateOrgEventSteps,
@@ -12,6 +17,7 @@ import {
 import ProjectCard from "./components/ProjectCard.jsx";
 import CustomModal from "../../tools/CustomModal.jsx";
 import { globalStyles } from "../../stylesConstants.js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
 	const { user, setSteps, steps, orgEvent } = useUser();
@@ -19,8 +25,9 @@ export default function HomeScreen() {
 		useState(false);
 	const [streakRewardModalVisible, setStreakRewardModalVisible] =
 		useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 
-	async function checkUserRewards(uid) {
+	const checkUserRewards = useCallback(async (uid) => {
 		const date = new Date();
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -36,7 +43,7 @@ export default function HomeScreen() {
 			// Error de lectura (¡corrupción!), limpiamos el valor para forzar el reprocesamiento
 			console.error(
 				"Error de lectura de AsyncStorage (tracker), limpiando...",
-				error
+				error,
 			);
 			await AsyncStorage.removeItem("tracker");
 		}
@@ -66,14 +73,14 @@ export default function HomeScreen() {
 			if (responseData) {
 				if (responseData.steps > user.RECOMMENDED_DAILY_STEPS) {
 					console.log(
-						"Felicitaciones! Superaste los pasos recomendados en una sola sesion. ganaste 200 pasos!"
+						"Felicitaciones! Superaste los pasos recomendados en un día. ganaste 200 pasos!",
 					);
 					// modal y actualizar pasos usuario y orgEvent
 					setSessionRewardModalVisible(true);
 					try {
 						const updateResponse = await updateUserTotalSteps(
 							uid,
-							user.SESSION_REWARD
+							user.SESSION_REWARD,
 						);
 						console.log("User total steps updated:", updateResponse);
 						setSteps(updateResponse.newTotalSteps);
@@ -113,7 +120,7 @@ export default function HomeScreen() {
 						// ... (Toda la lógica de incremento y premio de racha) ...
 						await AsyncStorage.setItem(
 							"streak",
-							JSON.stringify(parsedStreakCount + 1)
+							JSON.stringify(parsedStreakCount + 1),
 						);
 					} else {
 						// Si no había racha o se reinició por error, la iniciamos en 1 si cumple con los pasos
@@ -122,14 +129,14 @@ export default function HomeScreen() {
 					//si la racha es igual a 5, premio con pasos y luego reinicio el conteo
 					if (parsedStreakCount + 1 === 5) {
 						console.log(
-							"Felicitaciones! Tuviste una racha de 5 días de caminatas. ganaste 500 pasos!"
+							"Felicitaciones! Tuviste una racha de 5 días de caminatas. ganaste 500 pasos!",
 						);
 						// modal y actualizar pasos usuario y orgEvent
 						setStreakRewardModalVisible(true);
 						try {
 							const updateResponse = await updateUserTotalSteps(
 								uid,
-								user.STREAK_REWARD
+								user.STREAK_REWARD,
 							);
 							console.log("User total steps updated:", updateResponse);
 							setSteps(updateResponse.newTotalSteps);
@@ -152,11 +159,20 @@ export default function HomeScreen() {
 			console.log(error);
 			await AsyncStorage.removeItem("tracker", today);
 		}
-	}
+	}, []);
+
+	// Esta función se ejecuta al deslizar hacia abajo
+	const onRefresh = useCallback(async () => {
+		if (user?.id) {
+			setRefreshing(true);
+			await checkUserRewards(user.id);
+			setRefreshing(false);
+		}
+	}, [user?.id, checkUserRewards]);
 
 	useEffect(() => {
-		if (user) checkUserRewards(user.id);
-	}, []);
+		if (user?.id) checkUserRewards(user.id);
+	}, [user?.id, checkUserRewards]);
 
 	return (
 		<View style={styles.container}>
@@ -164,21 +180,16 @@ export default function HomeScreen() {
 				<HeaderBar title={"Home"} subTitle={"Tu acción suma"} />
 			:	<ActivityIndicator size="small" />}
 			{user ?
-				<View style={styles.content}>
-					<ProjectCard
-						userTotalSteps={user.totalSteps}
-						userOrgEventId={orgEvent._id}
-					/>
+				<ScrollView
+					style={styles.content}
+					refreshControl={
+						<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+					}
+				>
+					<ProjectCard />
 
-					<UserIndicatorsSection
-						uid={user.id}
-						recommendedSteps={user.RECOMMENDED_DAILY_STEPS}
-						hoursToCountSteps={user.HOURS_TO_COUNT_STEPS}
-						eid={orgEvent._id}
-						setSteps={setSteps}
-						steps={steps}
-					/>
-				</View>
+					<UserIndicatorsSection />
+				</ScrollView>
 			:	<ActivityIndicator size="large" />}
 
 			<CustomModal
@@ -226,6 +237,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	content: {
-		gap: 25,
+		gap: "3%",
 	},
 });

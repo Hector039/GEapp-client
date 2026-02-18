@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 import { useEffect, useState } from "react";
 import { getOrgEventTotalSteps } from "../../../services/apiEndpoints.js";
 import { globalStyles } from "../../../stylesConstants.js";
@@ -6,9 +6,13 @@ import ProgressBar from "./ProgressBar.jsx";
 import { useUser } from "../../../context/UserContext.js";
 
 export default function OrgIndicatorsSection({ eid }) {
-	const { subscriptionState } = useUser();
-	const [orgEventSteps, setOrgEventSteps] = useState(0);
-	const [projectGoalSteps, setProjectGoalSteps] = useState(0);
+	const {
+		subscriptionState,
+		setOrgEventSteps,
+		setProjectGoalSteps,
+		projectGoalSteps,
+		orgEventSteps,
+	} = useUser();
 
 	async function fetchTotalOrgEventSteps() {
 		try {
@@ -34,9 +38,11 @@ export default function OrgIndicatorsSection({ eid }) {
 
 			<View>
 				<View style={styles.progressTextContainer}>
-					<Text style={styles.progressText}>
-						{(orgEventSteps * 100) / projectGoalSteps}%
-					</Text>
+					{orgEventSteps !== null && projectGoalSteps !== null ?
+						<Text style={styles.progressText}>
+							{(orgEventSteps * 100) / projectGoalSteps}%
+						</Text>
+					:	<ActivityIndicator size="small" />}
 					<Text
 						style={[
 							styles.infoText,

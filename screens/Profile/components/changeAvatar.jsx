@@ -75,20 +75,20 @@ export default function ChangeAvatar({ uid }) {
 const styles = StyleSheet.create({
 	container: {
 		alignItems: "center",
-		marginTop: 30,
+		marginTop: 10,
 	},
 	avatarButton: {
-		borderColor: globalStyles.colors.secondary,
-		borderWidth: 1,
 		borderRadius: 18,
-		backgroundColor: "#80b34925",
-		paddingVertical: 10,
-		paddingHorizontal: 20,
+		backgroundColor: globalStyles.colors.secondary,
+		marginTop: 10,
 	},
+
 	avatarButtonText: {
 		fontFamily: "RubikMedium",
 		fontSize: globalStyles.fSizes.medium,
-		color: "#5E5D5D",
+		color: "white",
 		textAlign: "center",
+		paddingVertical: 10,
+		paddingHorizontal: 20,
 	},
 });

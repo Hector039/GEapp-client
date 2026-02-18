@@ -4,31 +4,42 @@
     "slug": "GEapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo-pill.png",
+    "icon": "./assets/geLogo01.svg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logo-pill.png",
+      "image": "./assets/generarecologo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hector039.GEapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo-pill.png",
+        "foregroundImage": "./assets/generarecologo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.health.READ_STEPS"
+        "android.permission.READ_STEPS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.RECORD_AUDIO"
       ],
       "package": "com.hector039.GEapp"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/generarecologo.png"
     },
     "plugins": [
       [
@@ -49,6 +60,19 @@
       ],
       [
         "expo-health-connect"
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Permite que la app cuente tus pasos mientras caminas."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysPermissionMsg": "Necesitamos acceso al sensor incluso con la pantalla apagada para contar tus pasos con precisión.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
       ]
     ],
     "extra": {

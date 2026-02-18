@@ -1,4 +1,11 @@
-import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
+import {
+	ActivityIndicator,
+	Image,
+	ScrollView,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native";
 import HeaderBar from "../../components/HeaderBar.jsx";
 import { useUser } from "../../context/UserContext.js";
 import { useEffect } from "react";
@@ -30,11 +37,8 @@ export default function ProjectScreen() {
 				<HeaderBar title={"Proyecto"} subTitle={""} />
 			:	<ActivityIndicator size="small" />}
 			{project ?
-				<View style={styles.projectContainer}>
-					<ProjectCard
-						userTotalSteps={user.totalSteps}
-						userOrgEventId={orgEvent._id}
-					/>
+				<ScrollView style={styles.scrollContainer}>
+					<ProjectCard />
 
 					<View style={styles.impactCard}>
 						<Text style={styles.title}>Impacto</Text>
@@ -56,7 +60,7 @@ export default function ProjectScreen() {
 						</View>
 						<Text style={styles.descr}>{project.descr}</Text>
 					</View>
-				</View>
+				</ScrollView>
 			:	<ActivityIndicator size="large" />}
 		</View>
 	);
@@ -66,8 +70,8 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 	},
-	projectContainer: {
-		gap: 25,
+	scrollContainer: {
+		flexGrow: 1,
 	},
 	title: {
 		fontFamily: "RubikBold",
@@ -77,7 +81,7 @@ const styles = StyleSheet.create({
 		paddingLeft: 15,
 	},
 	impactCard: {
-		marginVertical: 15,
+		marginTop: 30,
 		borderRadius: 20,
 		borderColor: "#D0DBE2",
 		borderWidth: 1,

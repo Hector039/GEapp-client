@@ -9,19 +9,13 @@ export default function TicButton() {
 		navigation.navigate("Tic", { comingFrom: "profile" });
 
 	return (
-		<TouchableOpacity style={styles.ticButton} onPress={handleGoToTic}>
+		<TouchableOpacity onPress={handleGoToTic}>
 			<Text style={styles.ticButtonText}>Términos y condiciones</Text>
 		</TouchableOpacity>
 	);
 }
 
 const styles = StyleSheet.create({
-	ticButton: {
-		alignSelf: "center",
-		borderTopWidth: 2,
-		borderTopColor: globalStyles.colors.secondary,
-		width: "85%",
-	},
 	ticButtonText: {
 		fontFamily: "RubikMedium",
 		fontSize: globalStyles.fSizes.medium,

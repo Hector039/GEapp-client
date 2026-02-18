@@ -13,7 +13,7 @@ export default function HeaderBar({ title, subTitle }) {
 	};
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<View style={styles.container}>
 			<TouchableOpacity onPress={handleGoToProfile}>
 				<Image
 					style={styles.userAvatar}
@@ -36,7 +36,7 @@ export default function HeaderBar({ title, subTitle }) {
 					<Text style={styles.subTitleWelcome}>{subTitle}</Text>
 				:	null}
 			</View>
-		</SafeAreaView>
+		</View>
 	);
 }
 
@@ -63,12 +63,12 @@ const styles = StyleSheet.create({
 	},
 	titleWelcome: {
 		fontFamily: "RubikMedium",
-		fontSize: globalStyles.fSizes.medium,
+		fontSize: globalStyles.fSizes.large,
 		color: globalStyles.colors.tertiary,
 	},
 	subTitleWelcome: {
 		fontFamily: "RubikMedium",
-		fontSize: globalStyles.fSizes.small,
+		fontSize: globalStyles.fSizes.medium,
 		color: globalStyles.colors.tertiary,
 	},
 	title: {

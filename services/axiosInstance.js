@@ -9,16 +9,15 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
 	async function (config) {
-		const user = await AsyncStorage.getItem("user");
-		const token = user !== null ? JSON.parse(user).token : null;
-		if (token !== null) {
-			config.headers["Authorization"] = `Bearer ${token}`;
+		const token = await AsyncStorage.getItem("token");
+		if (JSON.parse(token) !== null) {
+			config.headers["Authorization"] = `Bearer ${JSON.parse(token)}`;
 		}
 		return config;
 	},
 	function (error) {
 		return Promise.reject(error);
-	}
+	},
 );
 
 export default axiosInstance;

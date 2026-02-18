@@ -3,18 +3,23 @@ import Start from "./Start";
 import OrgIndicatorsSection from "./OrgIndicatorsSection";
 import backGroundimage from "../assets/Card_Proyecto.png";
 import { globalStyles } from "../../../stylesConstants";
+import { useUser } from "../../../context/UserContext";
 
-export default function ProjectCard({ userTotalSteps, userOrgEventId }) {
+export default function ProjectCard() {
+	const { steps, orgEvent } = useUser();
 	return (
 		<ImageBackground source={backGroundimage} style={styles.cardContainer}>
 			<View style={styles.componentContainer}>
 				<View style={styles.buttonAndTextContainer}>
 					<Start />
-					<Text style={styles.userStepsText}>{userTotalSteps} pasos totales</Text>
+					<Text style={styles.userStepsText}>{steps} pasos totales</Text>
 				</View>
-				<Image style={styles.logo} source={require("../assets/ge_logo01.png")} />
+				<Image
+					style={styles.logo}
+					source={require("../assets/generar_eco_logos-01.png")}
+				/>
 			</View>
-			<OrgIndicatorsSection eid={userOrgEventId} />
+			<OrgIndicatorsSection eid={orgEvent._id} />
 		</ImageBackground>
 	);
 }

@@ -19,7 +19,7 @@ import DeactivateAccountButton from "./components/deactivateAccountButton.jsx";
 export default function ProfileScreen() {
 	const { user, userAvatar } = useUser();
 	return (
-		<SafeAreaView style={styles.container}>
+		<View style={styles.container}>
 			<Text style={styles.title}>Perfil</Text>
 			{user ?
 				<View style={styles.userInfocontainer}>
@@ -32,23 +32,30 @@ export default function ProfileScreen() {
 						}
 						resizeMode="cover"
 					/>
-					<View style={styles.emailInfoContainer}>
+					<View>
 						<Text style={styles.emailTitleText}>Mail de registro</Text>
 						<Text style={styles.emailText}>{user.email}</Text>
 					</View>
 				</View>
 			:	<ActivityIndicator size="small" />}
 			{user ?
-				<ScrollView style={styles.content}>
+				<ScrollView style={styles.scrollContent}>
+					<ChangeAvatar uid={user.id} />
 					<ChangeEmail uid={user.id} oldEmail={user.email} />
 					<ChangePassword uid={user.id} />
-					<ChangeAvatar uid={user.id} />
-					<Logout />
-					<TicButton />
-					<DeactivateAccountButton uid={user.id} />
+					<View style={styles.separator}>
+						<Logout />
+					</View>
+					<View style={styles.separator}>
+						<TicButton />
+					</View>
+					<View style={styles.separator}>
+						<DeactivateAccountButton uid={user.id} />
+					</View>
+					<View style={styles.lastSeparator}></View>
 				</ScrollView>
 			:	<ActivityIndicator size="large" />}
-		</SafeAreaView>
+		</View>
 	);
 }
 
@@ -56,14 +63,16 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		gap: 20,
-		marginTop: 40,
-		marginBottom: 80,
+	},
+	scrollContent: {
+		flexGrow: 1,
 	},
 	title: {
 		fontFamily: "RubikMedium",
 		fontSize: globalStyles.fSizes.large,
 		color: globalStyles.colors.tertiary,
 		textAlign: "center",
+		marginTop: 20,
 	},
 	userInfocontainer: {
 		flexDirection: "row",
@@ -76,7 +85,6 @@ const styles = StyleSheet.create({
 		height: 130,
 		borderRadius: 80,
 	},
-	emailInfoContainer: {},
 	emailTitleText: {
 		fontFamily: "RubikMedium",
 		fontSize: 20,
@@ -85,7 +93,17 @@ const styles = StyleSheet.create({
 		fontFamily: "RubikMedium",
 		fontSize: 14,
 	},
-	content: {
-		gap: 10,
+	separator: {
+		alignSelf: "center",
+		borderTopWidth: 2,
+		borderTopColor: globalStyles.colors.secondary,
+		width: "85%",
+	},
+	lastSeparator: {
+		alignSelf: "center",
+		borderTopWidth: 2,
+		borderTopColor: globalStyles.colors.secondary,
+		width: "85%",
+		marginBottom: 2,
 	},
 });

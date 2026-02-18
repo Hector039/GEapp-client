@@ -12,7 +12,7 @@ import CircularProgress from "../Home/components/CircularProgress.jsx";
 import ChartGraph from "./components/chartGraph.jsx";
 
 export default function ActivityScreen() {
-	const { user, steps } = useUser();
+	const { user, sessionSteps, steps } = useUser();
 
 	return (
 		<View style={styles.container}>
@@ -20,10 +20,12 @@ export default function ActivityScreen() {
 				<HeaderBar title={"Tu actividad"} subTitle={""} />
 			:	<ActivityIndicator size="small" />}
 			{user ?
-				<ScrollView style={styles.content}>
+				<ScrollView style={styles.scrollContent}>
 					<View style={styles.indicatorsContent}>
 						<CircularProgress
-							percentage={(steps * 100) / user.RECOMMENDED_DAILY_STEPS}
+							percentage={
+								(sessionSteps * 100) / (user.RECOMMENDED_DAILY_STEPS || 5000)
+							}
 						/>
 						<Image
 							style={styles.footPrint}
@@ -31,7 +33,7 @@ export default function ActivityScreen() {
 						/>
 					</View>
 
-					<ChartGraph uid={user.id} totalSteps={user.totalSteps} />
+					<ChartGraph uid={user.id} totalSteps={steps} />
 					<RandomChallengeSection uid={user.id} />
 				</ScrollView>
 			:	<ActivityIndicator size="large" />}
@@ -43,15 +45,14 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 	},
-	content: {
-		marginBottom: 100,
+	scrollContent: {
+		flexGrow: 1,
 	},
 	indicatorsContent: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
 		gap: 20,
-		paddingVertical: 20,
 	},
 	footPrint: {
 		width: 130,

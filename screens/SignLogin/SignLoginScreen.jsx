@@ -1,38 +1,87 @@
 import { useEffect, useState } from "react";
 import {
+	requestPermission,
+	getSdkStatus,
+	SdkAvailabilityStatus,
+	initialize,
+} from "react-native-health-connect";
+import {
 	StyleSheet,
 	View,
 	TouchableOpacity,
 	Text,
 	StatusBar,
-	Button,
 } from "react-native";
-import { checkLoginStatus } from "../../tools/checkLoginStatus";
-import { useNavigation } from "@react-navigation/native";
 import Login from "./components/Login";
 import SignIn from "./components/SignIn";
 import Logo from "../../assets/geLogo01.svg";
 import { globalStyles } from "../../stylesConstants";
 import HeaderBackground from "./assets/headerBackground.svg";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Pedometer } from "expo-sensors";
 
 export default function SignLoginScreen() {
-	const navigation = useNavigation();
 	const [signupMode, setSignupMode] = useState(true);
 	const toggleSignInMode = () => setSignupMode(!signupMode);
+	/* 
+	async function checkSensorStatus() {
+		try {
+			// Check SDK availability
+			const status = await getSdkStatus();
+			if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE)
+				handleError("SDK no disponible.");
+			if (
+				status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+			)
+				handleError("SDK no disponible, se requiere instalar Salud Connect!");
 
-	async function checkLoginStatusWrapper() {
-		const isLogged = await checkLoginStatus();
-		if (isLogged) navigation.navigate("MainTabs", { screen: "Home" });
+			const isInitialized = await initialize();
+
+			if (!isInitialized) {
+				handleError("El sensor de pasos no disponible en este dispositivo.");
+				return;
+			}
+
+			const grantedPermissions = await requestPermission([
+				{ accessType: "read", recordType: "Steps" },
+			]);
+
+			if (
+				!grantedPermissions.some((permission) => permission.recordType === "Steps")
+			) {
+				handleError("Sin permisos concedidos por el usuario.");
+				return;
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	}
+ */
+
+	async function checkPedometerStatus() {
+		try {
+			const isAvailable = await Pedometer.isAvailableAsync();
+			if (!isAvailable) {
+				handleError("El sensor de pasos no disponible en este dispositivo.");
+				return;
+			}
+
+			const askPermission = await Pedometer.requestPermissionsAsync();
+			if (!askPermission.granted) {
+				handleError("Permisos no concedidos para usar el sensor de pasos.");
+				return;
+			}
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	useEffect(() => {
-		checkLoginStatusWrapper();
+		checkPedometerStatus();
 	}, []);
 
 	return (
-		<View style={{ flex: 1, backgroundColor: "#FBFBFB" }}>
+		<SafeAreaView style={{ flex: 1, backgroundColor: "#FBFBFB" }}>
 			<StatusBar barStyle="dark-content" backgroundColor="black" />
 
 			<HeaderBackground
@@ -42,7 +91,7 @@ export default function SignLoginScreen() {
 				preserveAspectRatio="xMidYMin slice"
 			/>
 
-			<SafeAreaView style={styles.safe}>
+			<View style={styles.safe}>
 				<Logo style={styles.logo} />
 				<Text style={styles.title}>
 					{signupMode ? "Bienvenido" : "Crear cuenta"}
@@ -64,10 +113,13 @@ export default function SignLoginScreen() {
 				{/* <Button
 					title="Reset Storage"
 					onPress={async () => {
-						// const userInLs = await AsyncStorage.getItem("user");
-						// console.log("user in LS: ", JSON.parse(userInLs));
+						const userInLs = await AsyncStorage.getItem("user");
+						const tokenInLs = await AsyncStorage.getItem("token");
+						console.log("user in LS: ", JSON.parse(userInLs));
+						console.log("token in LS: ", JSON.parse(tokenInLs));
 
-						// await AsyncStorage.removeItem("user");
+						await AsyncStorage.removeItem("token");
+						//await AsyncStorage.removeItem("user");
 						// await AsyncStorage.removeItem("userAvatarPath");
 						// await AsyncStorage.removeItem("userSteps");
 						// await AsyncStorage.removeItem("streak");
@@ -80,8 +132,8 @@ export default function SignLoginScreen() {
 						console.log("Storage limpio");
 					}}
 				/> */}
-			</SafeAreaView>
-		</View>
+			</View>
+		</SafeAreaView>
 	);
 }
 

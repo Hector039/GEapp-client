@@ -126,7 +126,7 @@ const ChartGraph = ({ uid, totalSteps }) => {
 // --- Estilos Corregidos ---
 const styles = StyleSheet.create({
 	container: {
-		marginBottom: 20,
+		marginBlock: 30,
 		width: "90%",
 		alignSelf: "center",
 	},
@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		gap: 15,
-		marginBottom: 15,
 	},
 	filterButton: {
 		flex: 1,

@@ -40,7 +40,7 @@ export default function ChangeEmail({ uid, oldEmail }) {
 		} catch (error) {
 			console.log(error.response.data.error);
 			handleError(
-				error.response.data.error.message || "Error al cambiar el email"
+				error.response.data.error.message || "Error al cambiar el email",
 			);
 		}
 	}
@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		backgroundColor: "#80b34925",
 		marginTop: 10,
+		paddingBlock: 12,
 	},
 	changeEmailButton: {
 		borderRadius: 18,

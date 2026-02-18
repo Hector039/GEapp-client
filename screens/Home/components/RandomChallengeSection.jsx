@@ -47,7 +47,7 @@ export default function RandomChallengeSection({ uid }) {
 								onPress={handleGoToChallenge}
 								style={styles.startButton}
 							>
-								<PlayIcon width={50} height={50} />
+								<PlayIcon width={40} height={40} />
 								<Text style={styles.startText}>Iniciar desafío</Text>
 							</TouchableOpacity>
 						</View>
@@ -66,10 +66,11 @@ const styles = StyleSheet.create({
 		borderColor: globalStyles.colors.primary,
 		borderWidth: 1,
 		width: "90%",
+		marginBottom: 20,
 	},
 	challengeCard: {
-		paddingVertical: 20,
-		paddingHorizontal: 20,
+		paddingVertical: 15,
+		paddingHorizontal: 15,
 	},
 	challengeContainer: {
 		flexDirection: "row",
@@ -78,10 +79,9 @@ const styles = StyleSheet.create({
 		width: "90%",
 		gap: 10,
 	},
-	challengeInfoContainer: {},
 	image: {
-		width: 130,
-		height: 130,
+		width: 120,
+		height: 120,
 	},
 	title: {
 		fontFamily: "RubikBold",
@@ -95,10 +95,6 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		marginTop: 15,
-	},
-	startImage: {
-		width: 50,
-		height: 50,
 	},
 	startText: {
 		fontFamily: "RubikBold",

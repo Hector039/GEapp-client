@@ -45,7 +45,7 @@ export default function Login() {
 			return handleError("Correo inválido, verifica e intenta nuevamente");
 		if (!passwordRegex.test(password))
 			return handleError(
-				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+				"Contraseña inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales",
 			);
 		try {
 			const responseData = await userLogin(email, password);
@@ -80,7 +80,7 @@ export default function Login() {
 						});
 					}
 				}
-				navigation.navigate("MainTabs", { screen: "Home" });
+				//navigation.navigate("MainTabs");
 			}
 		} catch (error) {
 			console.log(error.message);
@@ -95,7 +95,7 @@ export default function Login() {
 			const responseData = await reactivateUserAccount(uid);
 			if (responseData.ok) {
 				setError(
-					"Tu cuenta se reactivó correctamente, ya puedes ingresar normalmente."
+					"Tu cuenta se reactivó correctamente, ya puedes ingresar normalmente.",
 				);
 				setErrorModalVisible(!errorModalVisible);
 			}
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
 		borderColor: globalStyles.colors.tertiary,
 		borderWidth: 2,
 		width: "85%",
-		marginBlock: 20,
+		marginBottom: 30,
 	},
 	textInput: {
 		width: "85%",
@@ -254,6 +254,7 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		backgroundColor: "#80b34925",
 		marginTop: 40,
+		paddingBlock: 15,
 	},
 	rememberMeContainer: {
 		flexDirection: "row",

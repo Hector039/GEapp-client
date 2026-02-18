@@ -5,153 +5,16 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { useEffect, useState } from "react";
-import {
-	initialize,
-	requestPermission,
-	readRecords,
-	getSdkStatus,
-	SdkAvailabilityStatus,
-} from "react-native-health-connect";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-	saveUserSession,
-	updateUserTotalSteps,
-	updateOrgEventSteps,
-} from "../../../services/apiEndpoints.js";
+
 import { globalStyles } from "../../../stylesConstants.js";
-import CustomLightModal from "../../../tools/CustomLightModal.jsx";
 import CircularProgress from "./CircularProgress.jsx";
 import { useNavigation } from "@react-navigation/native";
+import { useUser } from "../../../context/UserContext.js";
 
-export default function UserIndicatorsSection({
-	uid,
-	hoursToCountSteps,
-	recommendedSteps,
-	eid,
-	setSteps,
-	steps,
-}) {
+export default function UserIndicatorsSection() {
+	const { user, sessionSteps } = useUser();
+
 	const navigation = useNavigation();
-	const [error, setError] = useState(false);
-	const [errorModalVisible, setErrorModalVisible] = useState(false);
-
-	const getDailySteps = async (userId) => {
-		try {
-			// Check SDK availability
-			const status = await getSdkStatus();
-			if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE)
-				handleError("SDK no disponible.");
-			if (
-				status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
-			)
-				handleError("SDK no disponible, se requiere actualización");
-
-			// Initialize the pedometer
-			const isInitialized = await initialize();
-
-			if (!isInitialized) {
-				handleError("El sensor de pasos no disponible en este dispositivo.");
-				return;
-			}
-
-			const grantedPermissions = await requestPermission([
-				{ accessType: "read", recordType: "Steps" },
-			]);
-
-			if (
-				!grantedPermissions.some((permission) => permission.recordType === "Steps")
-			) {
-				handleError("Sin permisos concedidos por el usuario.");
-				return;
-			}
-
-			const startCountingSteps = await AsyncStorage.getItem("startCountingSteps");
-
-			if (!startCountingSteps) return;
-
-			const parsedStartCountingSteps = new Date(JSON.parse(startCountingSteps));
-
-			let endCountingSteps = await AsyncStorage.getItem("endCountingSteps");
-			endCountingSteps =
-				endCountingSteps ?
-					new Date(JSON.parse(endCountingSteps)).toISOString()
-				:	null;
-
-			if (endCountingSteps === null) {
-				const endCountingStepsTwoHours =
-					parsedStartCountingSteps.getTime() +
-					(hoursToCountSteps || 2) * 60 * 60 * 1000;
-				endCountingSteps = new Date(endCountingStepsTwoHours).toISOString();
-			}
-			//console.log("startCountingSteps:", parsedStartCountingSteps);
-			//console.log("endCountingSteps:", endCountingSteps);
-
-			const year = parsedStartCountingSteps.getFullYear();
-			const month = String(parsedStartCountingSteps.getMonth() + 1).padStart(
-				2,
-				"0"
-			);
-			const day = String(parsedStartCountingSteps.getDate()).padStart(2, "0");
-
-			const dateToPass = new Date(year, month - 1, day).toISOString();
-
-			const { records } = await readRecords("Steps", {
-				timeRangeFilter: {
-					operator: "between",
-					startTime: dateToPass,
-					endTime: endCountingSteps,
-				},
-			});
-
-			await AsyncStorage.removeItem("startCountingSteps");
-			await AsyncStorage.removeItem("endCountingSteps");
-
-			console.log("records:", records);
-
-			if (records.length > 0 && records[0].count > 0) {
-				try {
-					const responseData = await saveUserSession(
-						userId,
-						records[0].count,
-						parsedStartCountingSteps.toLocaleDateString("en-CA")
-					);
-					console.log("User session saved:", responseData);
-					//setPastStepCount(responseData.steps || 0);
-				} catch (error) {
-					console.log("Error saving user session:", error);
-				}
-
-				try {
-					const updateResponse = await updateUserTotalSteps(
-						userId,
-						records[0].count
-					);
-					console.log("User total steps updated:", updateResponse);
-					setSteps(updateResponse.newTotalSteps);
-				} catch (error) {
-					console.log("Error updating user total steps:", error);
-				}
-
-				try {
-					await updateOrgEventSteps(eid, records[0].count);
-				} catch (error) {
-					console.log("Error updating Org Event total steps:", error);
-				}
-			}
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	useEffect(() => {
-		if (uid) getDailySteps(uid);
-	}, []);
-
-	const handleError = (error) => {
-		setError(error);
-		setErrorModalVisible(!errorModalVisible);
-	};
 
 	function handleGoToChallenge() {
 		navigation.navigate("Challenges");
@@ -159,9 +22,14 @@ export default function UserIndicatorsSection({
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>Tu actividad</Text>
+			<View style={styles.titleContainer}>
+				<Text style={styles.title}>Tu actividad</Text>
+			</View>
+
 			<View style={styles.indicatorsCardContainer}>
-				<CircularProgress percentage={(steps * 100) / recommendedSteps} />
+				<CircularProgress
+					percentage={(sessionSteps * 100) / (user.RECOMMENDED_DAILY_STEPS || 5000)}
+				/>
 
 				<ImageBackground
 					style={styles.challengeContainer}
@@ -178,14 +46,10 @@ export default function UserIndicatorsSection({
 				</ImageBackground>
 			</View>
 			<Text style={styles.subTitle}>
-				¡Has alcanzado el {(steps * 100) / recommendedSteps}% de tu objetivo de hoy,
-				mantente enfocado en tu salud!
+				¡Has alcanzado el{" "}
+				{(sessionSteps * 100) / (user.RECOMMENDED_DAILY_STEPS || 5000)}% de tu
+				objetivo de hoy, mantente enfocado en tu salud!
 			</Text>
-			<CustomLightModal
-				visible={errorModalVisible}
-				onClose={() => setErrorModalVisible(!errorModalVisible)}
-				errorMessage={error}
-			/>
 		</View>
 	);
 }
@@ -211,7 +75,7 @@ const styles = StyleSheet.create({
 		fontSize: globalStyles.fSizes.small,
 		color: globalStyles.colors.tertiary,
 		paddingHorizontal: 30,
-		marginVertical: 20,
+		marginVertical: 10,
 		textAlign: "center",
 	},
 	indicatorsCardContainer: {

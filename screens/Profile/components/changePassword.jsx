@@ -33,11 +33,11 @@ export default function ChangePassword({ uid }) {
 
 		if (!passwordRegex.test(oldPassword))
 			return handleError(
-				"Contraseña anterior inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+				"Contraseña anterior inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales",
 			);
 		if (!passwordRegex.test(newPassword))
 			return handleError(
-				"Contraseña nueva inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales"
+				"Contraseña nueva inválida, debe tener entre 6 y 8 caracteres y no contener caracteres especiales",
 			);
 		try {
 			const responseData = await changePass(uid, oldPassword, newPassword);
@@ -46,7 +46,7 @@ export default function ChangePassword({ uid }) {
 		} catch (error) {
 			console.log(error.response.data);
 			handleError(
-				error.response?.data?.error.message || "Error al cambiar contraseña"
+				error.response?.data?.error.message || "Error al cambiar contraseña",
 			);
 		}
 	}
@@ -141,7 +141,7 @@ export default function ChangePassword({ uid }) {
 const styles = StyleSheet.create({
 	container: {
 		alignItems: "center",
-		marginTop: 30,
+		marginBlock: 30,
 	},
 	title: {
 		fontFamily: "RubikMedium",
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		backgroundColor: "#80b34925",
 		marginTop: 10,
+		paddingBlock: 12,
 	},
 	changePassButton: {
 		borderRadius: 18,
