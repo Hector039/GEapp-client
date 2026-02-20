@@ -20,7 +20,7 @@ import { globalStyles } from "../../stylesConstants.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
-	const { user, setSteps, steps, orgEvent } = useUser();
+	const { user, setSteps, orgEvent } = useUser();
 	const [sessionRewardModalVisible, setSessionRewardModalVisible] =
 		useState(false);
 	const [streakRewardModalVisible, setStreakRewardModalVisible] =

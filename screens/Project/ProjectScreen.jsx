@@ -15,7 +15,7 @@ import { globalStyles } from "../../stylesConstants.js";
 
 export default function ProjectScreen() {
 	const { user, project, setProject, orgEvent } = useUser();
-
+	/* 
 	useEffect(() => {
 		if (project) fetchInfoProject(project._id);
 	}, []);
@@ -29,7 +29,7 @@ export default function ProjectScreen() {
 		} catch (error) {
 			console.log(error);
 		}
-	}
+	} */
 
 	return (
 		<View style={styles.container}>

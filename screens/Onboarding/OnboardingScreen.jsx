@@ -15,13 +15,15 @@ import { useRef, useState } from "react";
 import Onboarding1png from "./assets/onboarding1png.png";
 import Onboarding2png from "./assets/onboarding2png.png";
 import Onboarding3png from "./assets/onboarding3png.png";
+import { useUser } from "../../context/UserContext";
 
 const { width } = Dimensions.get("window");
 
 export default function OnboardingScreen() {
+	const { setUser } = useUser();
 	const navigation = useNavigation();
 	const route = useRoute();
-	const { orgName, steps, treeGoal, locationProject } = route.params;
+	const { orgName, treeGoal, locationProject, user } = route.params;
 	const data = [
 		{
 			id: 1,
@@ -32,8 +34,8 @@ export default function OnboardingScreen() {
 		{
 			id: 2,
 			image: Onboarding2png,
-			title: `${orgName} desafió asus empleados a caminar`,
-			text: `Los empleados deben caminar cierta cantidad de pasos en un tiempo especificado.`,
+			title: `${orgName} desafió a sus colaboradores a caminar`,
+			text: `Los colaboradores deben caminar cierta cantidad de pasos en un tiempo especificado.`,
 		},
 		{
 			id: 3,
@@ -66,6 +68,11 @@ export default function OnboardingScreen() {
 			});
 			setCurrentIndex(prevIndex);
 		}
+	};
+
+	const handleGoToHome = () => {
+		setUser(user);
+		//navigation.navigate("MainTabs", { screen: "Home" })
 	};
 
 	const onViewableItemsChanged = useRef(({ viewableItems }) => {
@@ -114,11 +121,7 @@ export default function OnboardingScreen() {
 					return (
 						<View style={styles.itemContainer}>
 							<TouchableOpacity
-								onPress={
-									currentIndex === 0 ?
-										() => navigation.navigate("MainTabs", { screen: "Home" })
-									:	scrollToPreviousItem
-								}
+								onPress={currentIndex === 0 ? handleGoToHome : scrollToPreviousItem}
 								style={styles.skipIntroButton}
 							>
 								<Text style={styles.skipIntroButtonText}>
@@ -140,9 +143,7 @@ export default function OnboardingScreen() {
 
 							<TouchableOpacity
 								onPress={
-									currentIndex === data.length - 1 ?
-										() => navigation.navigate("MainTabs", { screen: "Home" })
-									:	scrollToNextItem
+									currentIndex === data.length - 1 ? handleGoToHome : scrollToNextItem
 								}
 								style={styles.nextButton}
 							>

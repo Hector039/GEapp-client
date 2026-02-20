@@ -11,7 +11,7 @@ import OnboardingScreen from "./screens/Onboarding/OnboardingScreen.jsx";
 import TabNavigator from "./TabNavigator.js";
 
 import { loadFonts } from "./hooks/useFonts.js";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import * as TaskManager from "expo-task-manager";
 import { Platform } from "react-native";
 import * as Location from "expo-location";
@@ -80,6 +80,11 @@ function RootNavigator() {
 							options={{ headerShown: false }}
 						/>
 						<Stack.Screen
+							name="Onboarding"
+							component={OnboardingScreen}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
 							name="PasswordRestoration"
 							component={PassRestorationScreen}
 							options={{ headerShown: false }}
@@ -87,11 +92,6 @@ function RootNavigator() {
 						<Stack.Screen
 							name="Tic"
 							component={TicScreen}
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen
-							name="Onboarding"
-							component={OnboardingScreen}
 							options={{ headerShown: false }}
 						/>
 					</>

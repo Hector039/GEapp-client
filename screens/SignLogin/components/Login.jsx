@@ -62,25 +62,23 @@ export default function Login() {
 
 			if (responseData) {
 				console.log("Login data user:", responseData);
-				setUser(responseData.user);
 				setIsLoading(false);
-				if (responseData.user.registerDate) {
-					const today = new Date();
-					const registerUserDate = new Date(responseData.user.registerDate);
-					if (
-						today.getDate() === registerUserDate.getDate() &&
-						today.getMonth() === registerUserDate.getMonth() &&
-						today.getFullYear() === registerUserDate.getFullYear()
-					) {
-						return navigation.navigate("Onboarding", {
-							orgName: responseData.orgEvent.orgName,
-							steps: responseData.orgEvent.steps,
-							treeGoal: responseData.project.treeGoal,
-							locationProject: responseData.project.location,
-						});
-					}
+
+				const today = new Date();
+				const registerUserDate = new Date(responseData.user.registerDate);
+				if (
+					today.getDate() === registerUserDate.getDate() &&
+					today.getMonth() === registerUserDate.getMonth() &&
+					today.getFullYear() === registerUserDate.getFullYear()
+				) {
+					return navigation.navigate("Onboarding", {
+						orgName: responseData.orgEvent.orgName,
+						treeGoal: responseData.project.treeGoal,
+						locationProject: responseData.project.location,
+						user: responseData.user,
+					});
 				}
-				//navigation.navigate("MainTabs");
+				setUser(responseData.user);
 			}
 		} catch (error) {
 			console.log(error.message);

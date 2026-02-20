@@ -8,11 +8,18 @@ import { useUser } from "../../../context/UserContext";
 export default function ProjectCard() {
 	const { steps, orgEvent } = useUser();
 	return (
-		<ImageBackground source={backGroundimage} style={styles.cardContainer}>
+		<ImageBackground
+			source={backGroundimage}
+			style={styles.cardContainer}
+			resizeMode="stretch"
+		>
 			<View style={styles.componentContainer}>
 				<View style={styles.buttonAndTextContainer}>
 					<Start />
-					<Text style={styles.userStepsText}>{steps} pasos totales</Text>
+					<View style={styles.userStepsTextContainer}>
+						<Text style={styles.userStepsText}>{steps}</Text>
+						<Text style={styles.userStepsText}>pasos totales</Text>
+					</View>
 				</View>
 				<Image
 					style={styles.logo}
@@ -26,13 +33,14 @@ export default function ProjectCard() {
 
 const styles = StyleSheet.create({
 	cardContainer: {
-		paddingTop: 20,
+		paddingTop: 30,
 		width: "100%",
 		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
+		shadowOffset: { width: 1, height: 2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 3.84,
-		elevation: 5,
+		borderTopLeftRadius: 15,
+		borderTopRightRadius: 15,
 	},
 	componentContainer: {
 		flexDirection: "row",
@@ -57,5 +65,8 @@ const styles = StyleSheet.create({
 		fontFamily: "RubikMedium",
 		fontSize: globalStyles.fSizes.medium,
 		color: globalStyles.colors.tertiary,
+	},
+	userStepsTextContainer: {
+		alignItems: "center",
 	},
 });

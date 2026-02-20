@@ -36,7 +36,7 @@ export default function ChangeEmail({ uid, oldEmail }) {
 		try {
 			const responseData = await changeUserEmail(uid, newEmail);
 			console.log("changeEmail data:", responseData);
-			if (responseData) setModalVisible(true);
+			if (responseData.ok) setModalVisible(true);
 		} catch (error) {
 			console.log(error.response.data.error);
 			handleError(

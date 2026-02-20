@@ -42,7 +42,7 @@ export default function ChangePassword({ uid }) {
 		try {
 			const responseData = await changePass(uid, oldPassword, newPassword);
 			console.log("changePass data:", responseData);
-			if (responseData) setModalVisible(true);
+			if (responseData.ok) setModalVisible(true);
 		} catch (error) {
 			console.log(error.response.data);
 			handleError(

@@ -38,7 +38,7 @@ export default function OrgIndicatorsSection({ eid }) {
 
 			<View>
 				<View style={styles.progressTextContainer}>
-					{orgEventSteps !== null && projectGoalSteps !== null ?
+					{orgEventSteps && projectGoalSteps ?
 						<Text style={styles.progressText}>
 							{(orgEventSteps * 100) / projectGoalSteps}%
 						</Text>
@@ -66,7 +66,7 @@ export default function OrgIndicatorsSection({ eid }) {
 const styles = StyleSheet.create({
 	container: {
 		backgroundColor: "white",
-		width: "87%",
+		width: "89%",
 		alignSelf: "center",
 		justifyContent: "center",
 		flexDirection: "row",
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
 		gap: 15,
 		borderTopRightRadius: 15,
 		borderTopLeftRadius: 15,
-		borderBottomLeftRadius: 20,
-		borderBottomRightRadius: 20,
+		borderBottomLeftRadius: 15,
+		borderBottomRightRadius: 15,
 		paddingBlock: 15,
 		marginTop: -30, // Si quieres que se superponga un poco con el fondo verde
 		padding: 15,

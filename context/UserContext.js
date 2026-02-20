@@ -58,7 +58,7 @@ export const UserProvider = ({ children }) => {
 		} else {
 			await AsyncStorage.removeItem(PROJECT_KEY);
 		}
-		setUsesetProjectStaterState(projectData);
+		setProjectState(projectData);
 	};
 
 	const setUserAvatar = async (userAvatarPath) => {

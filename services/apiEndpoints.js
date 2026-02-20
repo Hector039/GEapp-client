@@ -27,7 +27,7 @@ const ENDPOINTS = {
 export const getUserInfoRewards = async (uid, date) => {
 	try {
 		const response = await axios.get(
-			ENDPOINTS.getUserInfoRewards + `/${uid}` + `/${date}`
+			ENDPOINTS.getUserInfoRewards + `/${uid}` + `/${date}`,
 		);
 		return response.data;
 	} catch (error) {
@@ -120,7 +120,7 @@ export const getFinishedChallenges = async (uid) => {
 export const getDataChart = async (uid, filter) => {
 	try {
 		const response = await axios.get(
-			ENDPOINTS.getDataChart + `/${uid}` + `/${filter}`
+			ENDPOINTS.getDataChart + `/${uid}` + `/${filter}`,
 		);
 		return response.data;
 	} catch (error) {
@@ -152,14 +152,14 @@ export const getOrgEventTotalSteps = async (eid) => {
 export const changeUserAvatar = async (uid, formData) => {
 	const payload = { formData };
 	try {
-		const response = await axios.put(
+		const response = await axios.post(
 			ENDPOINTS.changeUserAvatar + `/${uid}`,
 			payload,
 			{
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},
-			}
+			},
 		);
 		return response.data;
 	} catch (error) {
@@ -251,7 +251,7 @@ export const userSignUp = async (email, password) => {
 export const restorePassword = async (email, password) => {
 	try {
 		const response = await axios.get(
-			ENDPOINTS.restorePassword + `/${email}` + `/${password}`
+			ENDPOINTS.restorePassword + `/${email}` + `/${password}`,
 		);
 		return response.data;
 	} catch (error) {

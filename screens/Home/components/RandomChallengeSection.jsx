@@ -53,7 +53,7 @@ export default function RandomChallengeSection({ uid }) {
 						</View>
 					</View>
 				</View>
-			:	<Text>Aún no hay desafíos, intenta más tarde.</Text>}
+			:	<Text>Aún no hay desafíos nuevos, intenta más tarde.</Text>}
 		</View>
 	);
 }

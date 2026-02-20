@@ -16,6 +16,7 @@ import {
 } from "../../../services/apiEndpoints.js";
 import * as Location from "expo-location";
 import { Pedometer } from "expo-sensors";
+import CustomLightModal from "../../../tools/CustomLightModal.jsx";
 
 const LOCATION_TASK_NAME = "background-pedometer-task";
 
@@ -116,6 +117,7 @@ export default function Start() {
 			await AsyncStorage.removeItem("start_time");
 			updateStepsToDataBase(user.id);
 		} catch (error) {
+			handleError(error.message || "Error al cargar la información de los pasos");
 			console.error(error);
 		}
 	};
@@ -132,36 +134,47 @@ export default function Start() {
 	const handleStart = async () => {
 		try {
 			if (subscriptionState === false) {
-				const endTime = Date.now() + user.HOURS_TO_COUNT_STEPS * 60 * 60 * 1000;
-				await AsyncStorage.setItem("automated_end_time", endTime.toString());
-
-				const startTime = Date.now();
-				await AsyncStorage.setItem("start_time", JSON.stringify(startTime));
-
-				console.log("Start time y End time en handleStart: ", startTime, endTime);
-
 				// 1. Pedir permisos
 				const askPedometerPermision = await Pedometer.requestPermissionsAsync();
+
 				if (askPedometerPermision.status !== "granted") {
 					console.log("El usuario denegó el permiso del sensor de pasos.");
+					handleError("El usuario denegó el permiso del sensor de pasos.");
 					return;
 				}
 
 				if (Platform.OS === "android") {
-					const askBackgroundLocationPermision =
-						await Location.requestBackgroundPermissionsAsync();
-
-					if (askBackgroundLocationPermision.status !== "granted") {
-						console.log("El usuario denegó el permiso de background Location.");
-						return;
-					}
 					const askForegroundLocationPermision =
 						await Location.requestForegroundPermissionsAsync();
 
+					console.log(
+						"Background task Permision: ",
+						askForegroundLocationPermision.status,
+					);
 					if (askForegroundLocationPermision.status !== "granted") {
 						console.log("El usuario denegó el permiso de foreground Location.");
 						return;
 					}
+					const askBackgroundLocationPermision =
+						await Location.requestBackgroundPermissionsAsync();
+
+					console.log(
+						"Background Location Permision: ",
+						askBackgroundLocationPermision.status,
+					);
+					if (askBackgroundLocationPermision.status !== "granted") {
+						console.log("El usuario denegó el permiso de background Location.");
+						handleError(
+							"El usuario denegó el permiso de ubicación en segundo plano.",
+						);
+						return;
+					}
+
+					const endTime = Date.now() + user.HOURS_TO_COUNT_STEPS * 60 * 60 * 1000;
+					await AsyncStorage.setItem("automated_end_time", endTime.toString());
+
+					const startTime = Date.now();
+					await AsyncStorage.setItem("start_time", JSON.stringify(startTime));
 
 					// 2. Iniciar el "escudo" de batería baja
 					await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
@@ -262,6 +275,12 @@ export default function Start() {
 			{subscriptionState ?
 				<Image style={styles.stopIcon} source={require("../assets/Stop.png")} />
 			:	<Image style={styles.startIcon} source={require("../assets/Play.png")} />}
+
+			<CustomLightModal
+				visible={errorModalVisible}
+				onClose={() => setErrorModalVisible(!errorModalVisible)}
+				errorMessage={error}
+			/>
 		</TouchableOpacity>
 	);
 }

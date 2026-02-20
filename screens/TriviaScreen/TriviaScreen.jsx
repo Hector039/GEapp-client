@@ -14,7 +14,8 @@ import HeaderBackground from "../SignLogin/assets/headerBackground.svg";
 
 const TriviaScreen = ({ route }) => {
 	const { challenge, userId } = route.params;
-	const { user, setSteps } = useUser();
+	const { user, setSteps, setOrgEventSteps, setProjectGoalSteps, orgEvent } =
+		useUser();
 	const navigation = useNavigation();
 	const [selectedIndex, setSelectedIndex] = useState(null);
 	const [answerResult, setAnswerResult] = useState(false);
@@ -50,7 +51,13 @@ const TriviaScreen = ({ route }) => {
 			}
 
 			try {
-				await updateOrgEventSteps(user.orgEvent._id, challenge.reward);
+				const updateOrgResponse = await updateOrgEventSteps(
+					orgEvent._id,
+					challenge.reward,
+				);
+				console.log("Orgevent steps updated:", updateOrgResponse);
+				setOrgEventSteps(updateOrgResponse.orgEventSteps);
+				setProjectGoalSteps(updateOrgResponse.projectGoalSteps);
 			} catch (error) {
 				console.log("Error updating Org Event total steps from trivia:", error);
 			}
