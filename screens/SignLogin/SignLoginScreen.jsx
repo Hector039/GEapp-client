@@ -18,7 +18,6 @@ import Logo from "../../assets/geLogo01.svg";
 import { globalStyles } from "../../stylesConstants";
 import HeaderBackground from "./assets/headerBackground.svg";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Pedometer } from "expo-sensors";
 
 export default function SignLoginScreen() {
 	const [signupMode, setSignupMode] = useState(true);
@@ -57,28 +56,6 @@ export default function SignLoginScreen() {
 		}
 	}
  */
-
-	async function checkPedometerStatus() {
-		try {
-			const isAvailable = await Pedometer.isAvailableAsync();
-			if (!isAvailable) {
-				handleError("El sensor de pasos no disponible en este dispositivo.");
-				return;
-			}
-
-			const askPermission = await Pedometer.requestPermissionsAsync();
-			if (!askPermission.granted) {
-				handleError("Permisos no concedidos para usar el sensor de pasos.");
-				return;
-			}
-		} catch (error) {
-			console.error(error);
-		}
-	}
-
-	useEffect(() => {
-		checkPedometerStatus();
-	}, []);
 
 	return (
 		<SafeAreaView style={{ flex: 1, backgroundColor: "#FBFBFB" }}>

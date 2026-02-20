@@ -14,7 +14,7 @@ import HeaderBackground from "../SignLogin/assets/headerBackground.svg";
 
 const TriviaScreen = ({ route }) => {
 	const { challenge, userId } = route.params;
-	const { user, setSteps, setOrgEventSteps, setProjectGoalSteps, orgEvent } =
+	const { setSteps, setOrgEventSteps, setProjectGoalSteps, orgEvent } =
 		useUser();
 	const navigation = useNavigation();
 	const [selectedIndex, setSelectedIndex] = useState(null);

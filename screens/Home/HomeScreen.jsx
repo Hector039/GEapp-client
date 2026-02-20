@@ -20,7 +20,8 @@ import { globalStyles } from "../../stylesConstants.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
-	const { user, setSteps, orgEvent } = useUser();
+	const { user, setSteps, orgEvent, setOrgEventSteps, setProjectGoalSteps } =
+		useUser();
 	const [sessionRewardModalVisible, setSessionRewardModalVisible] =
 		useState(false);
 	const [streakRewardModalVisible, setStreakRewardModalVisible] =
@@ -89,7 +90,13 @@ export default function HomeScreen() {
 					}
 
 					try {
-						await updateOrgEventSteps(orgEvent._id, user.SESSION_REWARD);
+						const updateOrgResponse = await updateOrgEventSteps(
+							orgEvent._id,
+							user.SESSION_REWARD,
+						);
+						console.log("Orgevent steps updated:", updateOrgResponse);
+						setOrgEventSteps(updateOrgResponse.orgEventSteps);
+						setProjectGoalSteps(updateOrgResponse.projectGoalSteps);
 					} catch (error) {
 						console.log("Error updating Org Event total steps:", error);
 					}
@@ -145,7 +152,13 @@ export default function HomeScreen() {
 						}
 
 						try {
-							await updateOrgEventSteps(orgEvent._id, user.STREAK_REWARD);
+							const updateOrgResponse = await updateOrgEventSteps(
+								orgEvent._id,
+								user.STREAK_REWARD,
+							);
+							console.log("Orgevent steps updated:", updateOrgResponse);
+							setOrgEventSteps(updateOrgResponse.orgEventSteps);
+							setProjectGoalSteps(updateOrgResponse.projectGoalSteps);
 						} catch (error) {
 							console.log("Error updating Org Event total steps:", error);
 						}

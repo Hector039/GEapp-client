@@ -35,6 +35,25 @@ export default function Start() {
 	const [error, setError] = useState(false);
 	const [errorModalVisible, setErrorModalVisible] = useState(false);
 
+	async function checkPedometer() {
+		try {
+			const isAvailable = await Pedometer.isAvailableAsync();
+			if (!isAvailable) {
+				handleError("El sensor de pasos no disponible en este dispositivo.");
+				return;
+			}
+
+			const askPermission = await Pedometer.requestPermissionsAsync();
+			if (!askPermission.granted) {
+				console.log("El usuario denegó el permiso del sensor de pasos.");
+				handleError("El usuario denegó el permiso del sensor de pasos.");
+				return;
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
 	const setTrackedSteps = async (steps) => {
 		try {
 			if (steps) {
@@ -135,13 +154,7 @@ export default function Start() {
 		try {
 			if (subscriptionState === false) {
 				// 1. Pedir permisos
-				const askPedometerPermision = await Pedometer.requestPermissionsAsync();
-
-				if (askPedometerPermision.status !== "granted") {
-					console.log("El usuario denegó el permiso del sensor de pasos.");
-					handleError("El usuario denegó el permiso del sensor de pasos.");
-					return;
-				}
+				checkPedometer();
 
 				if (Platform.OS === "android") {
 					const askForegroundLocationPermision =

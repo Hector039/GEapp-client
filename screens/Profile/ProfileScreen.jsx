@@ -4,34 +4,91 @@ import {
 	ScrollView,
 	StyleSheet,
 	Text,
+	TouchableOpacity,
 	View,
 } from "react-native";
 import { useUser } from "../../context/UserContext.js";
 import Logout from "./components/logout.jsx";
 import ChangePassword from "./components/changePassword.jsx";
 import ChangeEmail from "./components/changeEmail.jsx";
-import ChangeAvatar from "./components/changeAvatar.jsx";
+//import ChangeAvatar from "./components/changeAvatar.jsx";
 import { globalStyles } from "../../stylesConstants.js";
-import { SafeAreaView } from "react-native-safe-area-context";
 import TicButton from "./components/ticButton.jsx";
 import DeactivateAccountButton from "./components/deactivateAccountButton.jsx";
 
+import * as ImagePicker from "expo-image-picker";
+import CustomLightModal from "../../tools/CustomLightModal.jsx";
+import { changeUserAvatar } from "../../services/apiEndpoints.js";
+import { useState } from "react";
+
 export default function ProfileScreen() {
-	const { user, userAvatar } = useUser();
+	const { user, userAvatar, setUserAvatar } = useUser();
+	const [error, setError] = useState("");
+	const [errorModalVisible, setErrorModalVisible] = useState(false);
+
+	async function handleChangeAvatar() {
+		setError("");
+		try {
+			const permissionResult =
+				await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+			if (permissionResult.granted === false)
+				return handleError("¡Permiso denegado para acceder a las fotos!");
+
+			let pickerResult = await ImagePicker.launchImageLibraryAsync({
+				mediaTypes: ["images"],
+				allowsEditing: true, // Opcional
+				aspect: [4, 3], // Opcional
+				quality: 1,
+			});
+
+			if (
+				pickerResult.canceled ||
+				!pickerResult.assets ||
+				pickerResult.assets.length === 0
+			)
+				return;
+
+			const selectedImage = pickerResult.assets[0];
+
+			const formData = new FormData();
+			formData.append("avatar", {
+				name: selectedImage.fileName || selectedImage.uri.split("/").pop(),
+				type: selectedImage.mimeType,
+				uri: selectedImage.uri,
+			});
+
+			const responseData = await changeUserAvatar(user.id, formData);
+			console.log("changeAvatar data:", responseData);
+			if (responseData) setUserAvatar(responseData);
+		} catch (error) {
+			console.log(error.response.data);
+			setError(error.response?.data?.error.message || "Error al cambiar Avatar");
+		}
+	}
+
+	const handleError = (error) => {
+		setError(error);
+		setErrorModalVisible(!errorModalVisible);
+	};
+
 	return (
 		<View style={styles.container}>
 			<Text style={styles.title}>Perfil</Text>
 			{user ?
 				<View style={styles.userInfocontainer}>
-					<Image
-						style={styles.userAvatar}
-						source={
-							userAvatar ?
-								{ uri: userAvatar }
-							:	require("../../assets/avatar-generico-dama.png")
-						}
-						resizeMode="cover"
-					/>
+					<TouchableOpacity onPress={handleChangeAvatar}>
+						<Image
+							style={styles.userAvatar}
+							source={
+								userAvatar ?
+									{ uri: userAvatar }
+								:	require("../../assets/avatar-generico-dama.png")
+							}
+							resizeMode="cover"
+						/>
+					</TouchableOpacity>
+
 					<View>
 						<Text style={styles.emailTitleText}>Mail de registro</Text>
 						<Text style={styles.emailText}>{user.email}</Text>
@@ -40,7 +97,7 @@ export default function ProfileScreen() {
 			:	<ActivityIndicator size="small" />}
 			{user ?
 				<ScrollView style={styles.scrollContent}>
-					<ChangeAvatar uid={user.id} />
+					{/* <ChangeAvatar uid={user.id} /> */}
 					<ChangeEmail uid={user.id} oldEmail={user.email} />
 					<ChangePassword uid={user.id} />
 					<View style={styles.separator}>
@@ -55,6 +112,12 @@ export default function ProfileScreen() {
 					<View style={styles.lastSeparator}></View>
 				</ScrollView>
 			:	<ActivityIndicator size="large" />}
+
+			<CustomLightModal
+				visible={errorModalVisible}
+				onClose={() => setErrorModalVisible(!errorModalVisible)}
+				errorMessage={error}
+			/>
 		</View>
 	);
 }

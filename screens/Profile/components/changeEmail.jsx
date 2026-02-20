@@ -124,7 +124,6 @@ export default function ChangeEmail({ uid, oldEmail }) {
 const styles = StyleSheet.create({
 	container: {
 		alignItems: "center",
-		marginTop: 30,
 	},
 	title: {
 		fontFamily: "RubikMedium",

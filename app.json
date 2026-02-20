@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/generarecologo.png",
+        "foregroundImage": "./assets/geLogo01.svg",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
